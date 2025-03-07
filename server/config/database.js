@@ -68,20 +68,3 @@ Object.keys(config).forEach(env => {
 });
 
 module.exports = config;
-
-// Example .env file structure (DO NOT INCLUDE ACTUAL VALUES IN CODE)
-/*
-DB_HOST=your-host
-DB_USER=your-user
-DB_PASSWORD=your-password
-DB_NAME=your-database
-DB_PORT=6543
-
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email
-SMTP_PASSWORD=your-password
-SMTP_FROM_EMAIL=your-email
-LOG_LEVEL=info
-NODE_ENV=production
-*/

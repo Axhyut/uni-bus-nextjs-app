@@ -71,11 +71,11 @@ export const PendingVerification = () => {
                       <p className="font-medium">Need help? Contact our support team</p>
                     </div>
                     <a 
-                      href="mailto:contactridewise@gmail.com" 
+                      href="mailto:nishantann@gmail.com" 
                       className="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-300"
                     >
                       <Mail className="w-4 h-4 mr-2" />
-                      contactridewise@gmail.com
+                      nishantann@gmail.com
                     </a>
                   </div>
                 </div>

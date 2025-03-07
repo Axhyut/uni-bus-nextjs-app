@@ -58,9 +58,9 @@ const Contact = () => {
                     <h2 className="text-2xl font-semibold text-black-600">Get in Touch</h2>
                     <p className="text-gray-700">If you have questions or need assistance, please reach out to us.</p>
                     <ul className="list-disc ml-5 mt-4 text-gray-700">
-                        <li><strong>Email:</strong> contactridewise@gmail.com</li>
+                        <li><strong>Email:</strong> nishantann@gmail.com</li>
                         <li><strong>Phone:</strong> +91 6003644157</li>
-                        <li><strong>Address:</strong> Kanchenjungha Men&apos;s Hostel, Tezpur University</li>
+                        <li><strong>Address:</strong> Charaideo Men&apos;s Hostel, Tezpur University</li>
                     </ul>
                 </section>
 
