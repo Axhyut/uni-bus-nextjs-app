@@ -45,7 +45,7 @@ const DriverScheduleApp = () => {
 
   const mapContainer = useRef(null);
 
-  const BASE_URL = 'https://ride-wise-server.vercel.app';
+  const BASE_URL = 'https://ridewise-server.vercel.app';
 
   const useDebounce = (value, delay) => {
     const [debouncedValue, setDebouncedValue] = useState(value);
@@ -85,7 +85,7 @@ const DriverScheduleApp = () => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user?.email) {
         try {
-          const response = await axios.get(`https://ride-wise-server.vercel.app/api/auth/user/${user.email}`);
+          const response = await axios.get(`https://ridewise-server.vercel.app/api/auth/user/${user.email}`);
           const userData = response.data;
           
           setIsDriverAccount(userData.userType === 'driver');
@@ -331,7 +331,7 @@ const DriverScheduleApp = () => {
           status: 'active'
         };
 
-        const response = await axios.post('https://ride-wise-server.vercel.app/api/schedules', scheduleData);
+        const response = await axios.post('https://ridewise-server.vercel.app/api/schedules', scheduleData);
         
         if (response.status === 201) {
           setIsScheduleSuccess(true);

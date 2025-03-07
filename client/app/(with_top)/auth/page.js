@@ -91,7 +91,7 @@ const AuthFlow = () => {
     }
   };
 
-  const BASE_URL = 'https://ride-wise-server.vercel.app';
+  const BASE_URL = 'https://ridewise-server.vercel.app';
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
@@ -105,7 +105,7 @@ const AuthFlow = () => {
         authData.password
       );
 
-      const response = await axios.get(`https://ride-wise-server.vercel.app/api/auth/user/${authData.email}`);
+      const response = await axios.get(`https://ridewise-server.vercel.app/api/auth/user/${authData.email}`);
       
       if (response.data.exists) {
         setRegistrationComplete(true);
@@ -179,7 +179,7 @@ const AuthFlow = () => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      const response = await axios.get(`https://ride-wise-server.vercel.app/api/auth/user/${user.email}`);
+      const response = await axios.get(`https://ridewise-server.vercel.app/api/auth/user/${user.email}`);
       
       if (response.data.exists) {
         setRegistrationComplete(true);
@@ -235,7 +235,7 @@ const AuthFlow = () => {
     setError(null);
 
     try {
-      const response = await axios.post('https://ride-wise-server.vercel.app/api/auth/signup', {
+      const response = await axios.post('https://ridewise-server.vercel.app/api/auth/signup', {
         ...formData,
         userType,
       });

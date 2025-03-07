@@ -14,7 +14,7 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
   const [error, setError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const BASE_URL = 'https://ride-wise-server.vercel.app';
+  const BASE_URL = 'https://ridewise-server.vercel.app';
 
   const handleRatingChange = (category, value) => {
     setRatings(prev => ({
@@ -48,7 +48,7 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
 
       console.log('Rating Payload:', payload);
 
-      const response = await axios.post('https://ride-wise-server.vercel.app/api/booking/rate', payload);
+      const response = await axios.post('https://ridewise-server.vercel.app/api/booking/rate', payload);
 
       if (response.data.success) {
         onSubmit();

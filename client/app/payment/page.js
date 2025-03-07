@@ -29,7 +29,7 @@ const PaymentPage = () => {
     driverName: searchParams.get('driverName')
   };
 
-  const BASE_URL = 'https://ride-wise-server.vercel.app';
+  const BASE_URL = 'https://ridewise-server.vercel.app';
 
   useEffect(() => {
     // Validate if all required booking details are present
@@ -82,7 +82,7 @@ const PaymentPage = () => {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Create booking with PNR
-      const response = await axios.post('https://ride-wise-server.vercel.app/api/booking/create', {
+      const response = await axios.post('https://ridewise-server.vercel.app/api/booking/create', {
         scheduleId: bookingDetails.scheduleId,
         passengerId: bookingDetails.passengerId,
         driverId: bookingDetails.driverId,
