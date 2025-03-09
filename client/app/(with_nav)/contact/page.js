@@ -9,7 +9,7 @@ const Contact = () => {
     useEffect(() => {
         const loadEmailJs = async () => {
             const emailjsModule = await import('@emailjs/browser');
-            emailjsModule.default.init('5Y5xWVUAuf8lKI0Na');
+            emailjsModule.default.init('xyJe1jHjv0QBlzgWq');
             setEmailjs(emailjsModule.default);
         };
         
