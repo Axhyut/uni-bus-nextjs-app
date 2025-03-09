@@ -111,7 +111,7 @@ const Contact = () => {
             </main>
 
             <footer className="text-center mt-6">
-                <p className="text-gray-600">&copy; 2024 RideWise. All rights reserved.</p>
+                <p className="text-gray-600">&copy; 2025 RideWise. All rights reserved.</p>
             </footer>
         </div>
     );
