@@ -25,7 +25,7 @@ const Contact = () => {
         }
 
         try {
-            await emailjs.sendForm('service_36y8uhd', 'template_d2dpd7y', event.target);
+            await emailjs.sendForm('service_36y8uhd', 'template_l8mzulb', event.target);
             
             await Swal.fire({
                 title: "Success",
