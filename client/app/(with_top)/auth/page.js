@@ -116,23 +116,28 @@ const AuthFlow = () => {
     setLoading(true);
     setError(null);
 
+    // Initialize the RecaptchaVerifier just before calling signInWithPhoneNumber
     try {
-      const res = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phone }),
-      });
-      
-      const data = await res.json();
-      if (data.success) {
-        setStep('verify');
-      } else {
-        setError(data.message);
-      }
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        auth,
+        "recaptcha-container",
+        {
+          size: "invisible",
+          callback: () => {
+            // reCAPTCHA solved
+          },
+        }
+      );
+
+      const confirmationResult = await signInWithPhoneNumber(
+        auth,
+        authData.phone,
+        window.recaptchaVerifier
+      );
+      window.confirmationResult = confirmationResult;
+      setStep("verify");
     } catch (error) {
-      setError('Failed to send OTP');
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -144,22 +149,17 @@ const AuthFlow = () => {
     setError(null);
 
     try {
-      const res = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phone, verificationCode }),
-      });
+      const result = await window.confirmationResult.confirm(
+        authData.verificationCode
+      );
 
-      const data = await res.json();
-      if (data.success) {
-        setStep('profile');
-      } else {
-        setError(data.message);
-      }
+      setFormData({
+        ...formData,
+        phoneNumber: authData.phone,
+      });
+      setStep("profile");
     } catch (error) {
-      setError('Failed to verify OTP');
+      setError("Invalid verification code");
     } finally {
       setLoading(false);
     }

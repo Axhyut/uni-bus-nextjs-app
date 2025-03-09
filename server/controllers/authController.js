@@ -1,5 +1,4 @@
 const { Driver, Passenger, Admin } = require('../models'); // Import models
-const { client, verifySid } = require('../config/twilio'); // Import Twilio config
 
 // Function to handle user signup
 const signup = async (req, res) => {
@@ -42,7 +41,33 @@ const signup = async (req, res) => {
   }
 };
 
-// Function to check if user already exists
+
+
+// const checkUserExistence = async (req, res) => {
+//   const { email } = req.params;
+//   console.log('Checking existence for email:', email);
+  
+//   try {
+//     // Check in Driver collection
+//     const driverCount = await Driver.count({ where: { email } });
+//     if (driverCount > 0) {
+//       return res.json({ exists: true, userType: 'driver'});
+//     }
+    
+//     // Check in Passenger collection
+//     const passengerCount = await Passenger.count({ where: { email } });
+//     if (passengerCount > 0) {
+//       return res.json({ exists: true, userType: 'passenger'});
+//     }
+    
+//     // If user not found in either collection
+//     return res.json({ exists: false });
+//   } catch (error) {
+//     console.error('Error checking user existence:', error);
+//     return res.status(500).json({ error: 'An error occurred while checking user existence' });
+//   }
+// };
+
 const checkUserExistence = async (req, res) => {
   const { email } = req.params;
   console.log('Checking existence for email:', email);
@@ -68,7 +93,9 @@ const checkUserExistence = async (req, res) => {
   }
 };
 
-// Function to handle admin login
+
+
+// Login endpoint
 const login = async (req, res) => {
   const { admin_name, password } = req.body;
 
@@ -95,53 +122,9 @@ const login = async (req, res) => {
   }
 };
 
-// ✅ **NEW FUNCTION TO SEND OTP**
-const sendOTP = async (req, res) => {
-  const { phone } = req.body;
-  if (!phone) {
-    return res.status(400).json({ success: false, message: 'Phone number is required' });
-  }
+module.exports = { login };
 
-  try {
-    await client.verify.v2.services(verifySid)
-      .verifications
-      .create({ to: phone, channel: 'sms' });
 
-    res.status(200).json({ success: true, message: 'OTP sent successfully' });
-  } catch (error) {
-    console.error('Error sending OTP:', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
 
-// ✅ **NEW FUNCTION TO VERIFY OTP**
-const verifyOTP = async (req, res) => {
-  const { phone, verificationCode } = req.body;
 
-  if (!phone || !verificationCode) {
-    return res.status(400).json({ success: false, message: 'Phone and OTP are required' });
-  }
-
-  try {
-    const result = await client.verify.v2.services(verifySid)
-      .verificationChecks
-      .create({ to: phone, code: verificationCode });
-
-    if (result.status === 'approved') {
-      return res.status(200).json({ success: true, message: 'OTP verified successfully' });
-    } else {
-      return res.status(400).json({ success: false, message: 'Invalid OTP' });
-    }
-  } catch (error) {
-    console.error('Error verifying OTP:', error);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-module.exports = {
-  signup,
-  checkUserExistence,
-  login,
-  sendOTP,
-  verifyOTP
-};
+module.exports = { signup, checkUserExistence, login };
