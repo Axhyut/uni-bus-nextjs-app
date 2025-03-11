@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { UserCircle, CheckCircle, XCircle } from "lucide-react";
 import Swal from "sweetalert2";
-const {sendEmail, generateDriverOnboardedEmail} = require('../server/utils/emailService');
 
 // Dashboard Tabs Component
 const DashboardTabs = ({ activeTab, setActiveTab }) => (
