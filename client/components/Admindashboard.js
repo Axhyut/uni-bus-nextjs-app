@@ -241,25 +241,6 @@ const Admindashboard = ({ adminName, onLogout }) => {
             text: "Your driver is active now!",
             icon: "success",
           });
-          try {
-            const [driverEmailSent] = await Promise.allSettled([
-              sendEmail(driver.email, generateDriverOn(driver))
-            ]);
-      
-            // Log email sending results
-            logger.info('Email Sending Results', {
-              driver: driverEmailSent.status
-            });
-      
-            // Optional: You could implement a notification system 
-            // for failed email sends if needed
-          } catch (emailError) {
-            logger.error('Email Sending Error', {
-              error: emailError,
-              driverId: driver.driverId
-            });
-            // Non-blocking email error
-          }
         } catch (error) {
           console.error("Error verifying driver:", error);
           Swal.fire({
