@@ -472,9 +472,14 @@ const checkAvailableVehicles = async (req, res) => {
 
     // Calculate prices and format response
     const baseRates = {
-      'Sedan': 10,
-      'SUV': 20,
-      'Luxury': 30
+      'hatchback' : 10,
+      'sedan' : 12,
+      'msuv' : 15,
+      'convertible' : 20,
+      'coupe' : 18,
+      'wagon' : 12,
+      'jeep'  : 18,
+      'van' : 12
     };
 
     // Group vehicles by type and include driver info

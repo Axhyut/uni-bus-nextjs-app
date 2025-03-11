@@ -195,12 +195,6 @@ const BookingApp = () => {
     }
   };
 
-  // const vehicleTypes = {
-  //   'Sedan': { baseRate: 10, vehicles: ['Toyota Camry', 'Honda Civic'] },
-  //   'SUV': { baseRate: 20, vehicles: ['Toyota Fortuner', 'Ford Endeavour'] },
-  //   'Luxury': { baseRate: 30, vehicles: ['Mercedes Benz', 'BMW 5 Series'] }
-  // };
-
   const handleSuggestionClick = async (suggestion, isPickup = true) => {
     const [lng, lat] = suggestion.center;
     const placeName = suggestion.place_name;

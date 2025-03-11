@@ -1,7 +1,8 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { UserCircle, CheckCircle, XCircle } from 'lucide-react';
+"use client";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { UserCircle, CheckCircle, XCircle } from "lucide-react";
+import Swal from "sweetalert2";
 
 // Dashboard Tabs Component
 const DashboardTabs = ({ activeTab, setActiveTab }) => (
@@ -9,21 +10,21 @@ const DashboardTabs = ({ activeTab, setActiveTab }) => (
     <div className="flex space-x-8">
       <button
         className={`py-4 px-1 border-b-2 font-medium text-sm ${
-          activeTab === 'drivers'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          activeTab === "drivers"
+            ? "border-blue-500 text-blue-600"
+            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
         }`}
-        onClick={() => setActiveTab('drivers')}
+        onClick={() => setActiveTab("drivers")}
       >
         Drivers
       </button>
       <button
         className={`py-4 px-1 border-b-2 font-medium text-sm ${
-          activeTab === 'passengers'
-            ? 'border-blue-500 text-blue-600'
-            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          activeTab === "passengers"
+            ? "border-blue-500 text-blue-600"
+            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
         }`}
-        onClick={() => setActiveTab('passengers')}
+        onClick={() => setActiveTab("passengers")}
       >
         Passengers
       </button>
@@ -37,13 +38,27 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
     <table className="min-w-full divide-y divide-gray-200">
       <thead className="bg-gray-50">
         <tr>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle Info</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Number</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Name
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Email
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Phone
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Vehicle Info
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            License Number
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Status
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Action
+          </th>
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-gray-200">
@@ -66,14 +81,16 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
               {driver.phoneNumber}
             </td>
             <td className="px-6 py-4 whitespace-nowrap">
-              <div className="text-sm text-gray-900">{driver.vehicleNumber}</div>
+              <div className="text-sm text-gray-900">
+                {driver.vehicleNumber}
+              </div>
               <div className="text-sm text-gray-500">{driver.vehicleType}</div>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {driver.licenseNumber}
             </td>
             <td className="px-6 py-4 whitespace-nowrap">
-              {driver.status === 'active' ? (
+              {driver.status === "active" ? (
                 <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                   Verified
                 </span>
@@ -84,7 +101,7 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
               )}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              {driver.status === 'inactive' ? (
+              {driver.status === "inactive" ? (
                 <button
                   onClick={() => handleVerifyDriver(driver.id)}
                   disabled={isLoading}
@@ -113,11 +130,21 @@ const PassengersTable = ({ passengers }) => (
     <table className="min-w-full divide-y divide-gray-200">
       <thead className="bg-gray-50">
         <tr>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Name
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Email
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Phone
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Gender
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Status
+          </th>
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-gray-200">
@@ -156,25 +183,25 @@ const PassengersTable = ({ passengers }) => (
 // Dashboard Component
 const Admindashboard = ({ adminName, onLogout }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [activeTab, setActiveTab] = useState('drivers');
+  const [activeTab, setActiveTab] = useState("drivers");
   const [drivers, setDrivers] = useState([]);
   const [passengers, setPassengers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const BASE_URL = 'https://ridewise-server.vercel.app';
+  const BASE_URL = "https://ridewise-server.vercel.app";
 
   // Fetch drivers and passengers data
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [driversRes, passengersRes] = await Promise.all([
-          axios.get('https://ridewise-server.vercel.app/api/drivers'),
-          axios.get('https://ridewise-server.vercel.app/api/passengers')
+          axios.get("https://ridewise-server.vercel.app/api/drivers"),
+          axios.get("https://ridewise-server.vercel.app/api/passengers"),
         ]);
         setDrivers(driversRes.data);
         setPassengers(passengersRes.data);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
       }
     };
 
@@ -182,26 +209,69 @@ const Admindashboard = ({ adminName, onLogout }) => {
   }, []);
 
   const handleVerifyDriver = async (driverId) => {
-    if (window.confirm('Are you sure you want to verify this driver?')) {
-      setIsLoading(true);
-      try {
-        await axios.patch(`https://ridewise-server.vercel.app/api/drivers/${driverId}/verify`, {
-          status: 'active'
-        });
-        
-        // Update the drivers list
-        setDrivers(drivers.map(driver => 
-          driver.id === driverId 
-            ? { ...driver, status: 'active' }
-            : driver
-        ));
-      } catch (error) {
-        console.error('Error verifying driver:', error);
-        alert('Failed to verify driver. Please try again.');
-      } finally {
-        setIsLoading(false);
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You want to verify this driver!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setIsLoading(true);
+        try {
+          await axios.patch(
+            `https://ridewise-server.vercel.app/api/drivers/${driverId}/verify`,
+            {
+              status: "active",
+            }
+          );
+
+          // Update the drivers list
+          setDrivers(
+            drivers.map((driver) =>
+              driver.id === driverId ? { ...driver, status: "active" } : driver
+            )
+          );
+
+          // Show success message
+          Swal.fire({
+            title: "Verified",
+            text: "Your driver is active now!",
+            icon: "success",
+          });
+          try {
+            const [driverEmailSent] = await Promise.allSettled([
+              sendEmail(driver.email, generateDriverOn(driver))
+            ]);
+      
+            // Log email sending results
+            logger.info('Email Sending Results', {
+              driver: driverEmailSent.status
+            });
+      
+            // Optional: You could implement a notification system 
+            // for failed email sends if needed
+          } catch (emailError) {
+            logger.error('Email Sending Error', {
+              error: emailError,
+              driverId: driver.driverId
+            });
+            // Non-blocking email error
+          }
+        } catch (error) {
+          console.error("Error verifying driver:", error);
+          Swal.fire({
+            title: "Failed",
+            text: "Failed to verify driver. Please try again.",
+            icon: "error",
+          });
+        } finally {
+          setIsLoading(false);
+        }
       }
-    }
+    });
   };
 
   return (
@@ -213,7 +283,10 @@ const Admindashboard = ({ adminName, onLogout }) => {
               <h1 className="text-xl font-semibold">Admin Dashboard</h1>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">Welcome, {adminName}</span>
+              <span className="text-sm text-gray-600">
+                Welcome
+                <br/>{adminName}
+              </span>
               <div className="relative">
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
@@ -243,11 +316,11 @@ const Admindashboard = ({ adminName, onLogout }) => {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-          
+
           <div className="bg-white shadow rounded-lg">
-            {activeTab === 'drivers' ? (
-              <DriversTable 
-                drivers={drivers} 
+            {activeTab === "drivers" ? (
+              <DriversTable
+                drivers={drivers}
                 handleVerifyDriver={handleVerifyDriver}
                 isLoading={isLoading}
               />
