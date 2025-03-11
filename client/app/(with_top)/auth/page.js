@@ -595,7 +595,7 @@ const AuthFlow = () => {
                   onChange={handleChange}
                   className="border border-gray-300 p-2 rounded w-full"
                 >
-                  <option value="">Select gender</option>
+                  <option value="">Select Gender</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>
@@ -648,10 +648,15 @@ const AuthFlow = () => {
                       onChange={handleChange}
                       className="border border-gray-300 p-2 rounded w-full"
                     >
-                      <option value="">Select vehicle type</option>
-                      <option value="Sedan">Sedan</option>
-                      <option value="Suv">Suv</option>
-                      <option value="Luxury">Luxury</option>
+                      <option value="">Select Vehicle Type</option>
+                      <option value="hatchback">Hatchback</option>
+                      <option value="sedan">Sedan</option>
+                      <option value="msuv">MUV/SUV</option>
+                      <option value="convertible">Convertible</option>
+                      <option value="coupe">Coupe</option>
+                      <option value="wagon">Wagon</option>
+                      <option value="jeep">Jeep</option>
+                      <option value="van">Van</option>
                     </select>
                   </div>
                   <div>
