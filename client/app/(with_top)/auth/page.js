@@ -40,6 +40,7 @@ const AuthFlow = () => {
     lastName: "",
     phoneNumber: "",
     gender: "",
+    dob: "",
     licenseNumber: "",
     vehicleNumber: "",
     vehicleType: "",
@@ -240,7 +241,7 @@ const AuthFlow = () => {
       setRegistrationComplete(true);
       router.push(userType === "driver" ? "/dashboard" : "/");
     } catch (error) {
-      setError("Error registering user");
+      setError("The user already exists");
       await handleSignOut();
     } finally {
       setLoading(false);
@@ -605,6 +606,19 @@ const AuthFlow = () => {
               {userType === "driver" && (
                 <>
                   <div>
+                    <label htmlFor="DOB" className="block text-gray-700 mb-1">
+                      Date-Of-Birth
+                    </label>
+                    <input
+                      type="date"
+                      id="dob"
+                      required
+                      value={formData.dob}
+                      onChange={handleChange}
+                      className="border border-gray-300 p-2 rounded w-full"
+                    />
+                  </div>
+                  <div>
                     <label
                       htmlFor="licenseNumber"
                       className="block text-gray-700 mb-1"
@@ -688,6 +702,7 @@ const AuthFlow = () => {
                       value={formData.licenseValidity}
                       onChange={handleChange}
                       className="border border-gray-300 p-2 rounded w-full"
+                      min={new Date().toISOString().split("T")[0]}
                     />
                   </div>
                 </>

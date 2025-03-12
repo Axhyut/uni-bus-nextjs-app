@@ -90,15 +90,21 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
               {driver.licenseNumber}
             </td>
             <td className="px-6 py-4 whitespace-nowrap">
-              {driver.status === "active" ? (
-                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                  Verified
-                </span>
-              ) : (
-                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                  Pending
-                </span>
-              )}
+              <span
+                className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                  driver.status === "active"
+                    ? "bg-green-100 text-green-800"
+                    : driver.status === "expired"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                {driver.status === "active"
+                  ? "Verified"
+                  : driver.status === "expired"
+                  ? "Expired"
+                  : "Pending"}
+              </span>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
               {driver.status === "inactive" ? (
@@ -183,10 +189,11 @@ const PassengersTable = ({ passengers }) => (
 // Dashboard Component
 const Admindashboard = ({ adminName, onLogout }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [activeTab, setActiveTab] = useState("drivers");
+  const [activeTab, setActiveTab] = useState("users");
   const [drivers, setDrivers] = useState([]);
   const [passengers, setPassengers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [userTab, setUserTab] = useState("drivers"); // Default table view
 
   const BASE_URL = "https://ridewise-server.vercel.app";
 
@@ -241,25 +248,6 @@ const Admindashboard = ({ adminName, onLogout }) => {
             text: "Your driver is active now!",
             icon: "success",
           });
-          try {
-            const [driverEmailSent] = await Promise.allSettled([
-              sendEmail(driver.email, generateDriverOn(driver))
-            ]);
-      
-            // Log email sending results
-            logger.info('Email Sending Results', {
-              driver: driverEmailSent.status
-            });
-      
-            // Optional: You could implement a notification system 
-            // for failed email sends if needed
-          } catch (emailError) {
-            logger.error('Email Sending Error', {
-              error: emailError,
-              driverId: driver.driverId
-            });
-            // Non-blocking email error
-          }
         } catch (error) {
           console.error("Error verifying driver:", error);
           Swal.fire({
@@ -285,7 +273,8 @@ const Admindashboard = ({ adminName, onLogout }) => {
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">
                 Welcome
-                <br/>{adminName}
+                <br />
+                {adminName}
               </span>
               <div className="relative">
                 <button
@@ -315,17 +304,94 @@ const Admindashboard = ({ adminName, onLogout }) => {
       </nav>
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+          {/* Main Navigation Buttons */}
+          <div className="flex space-x-4 mb-6">
+            <button
+              onClick={() => setActiveTab("users")}
+              className={`px-4 py-2 rounded-lg ${
+                activeTab === "users" ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              Users
+            </button>
+            <button
+              onClick={() => setActiveTab("utilities")}
+              className={`px-4 py-2 rounded-lg ${
+                activeTab === "utilities"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200"
+              }`}
+            >
+              Utilities
+            </button>
+          </div>
 
-          <div className="bg-white shadow rounded-lg">
-            {activeTab === "drivers" ? (
-              <DriversTable
-                drivers={drivers}
-                handleVerifyDriver={handleVerifyDriver}
-                isLoading={isLoading}
-              />
+          {/* Render content based on activeTab */}
+          <div className="bg-white shadow rounded-lg p-6">
+            {activeTab === "users" ? (
+              <>
+                {/* Sub-tabs for Drivers & Passengers */}
+                <div className="flex space-x-4 mb-4">
+                  <button
+                    onClick={() => setUserTab("drivers")}
+                    className={`px-4 py-2 rounded-lg ${
+                      userTab === "drivers"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200"
+                    }`}
+                  >
+                    Drivers
+                  </button>
+                  <button
+                    onClick={() => setUserTab("passengers")}
+                    className={`px-4 py-2 rounded-lg ${
+                      userTab === "passengers"
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200"
+                    }`}
+                  >
+                    Passengers
+                  </button>
+                </div>
+
+                {/* Displaying Tables */}
+                {userTab === "drivers" ? (
+                  <DriversTable
+                    drivers={drivers}
+                    handleVerifyDriver={handleVerifyDriver}
+                    isLoading={isLoading}
+                  />
+                ) : (
+                  <PassengersTable passengers={passengers} />
+                )}
+              </>
             ) : (
-              <PassengersTable passengers={passengers} />
+              <div className="text-center text-gray-600">
+                <div className="flex space-x-4 mb-4">
+                  <button
+                    onClick={() =>
+                      window.open(
+                        "https://parivahan.gov.in/rcdlstatus/?pur_cd=101",
+                        "_blank"
+                      )
+                    }
+                    className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition"
+                  >
+                    Check DL Status
+                  </button>
+                  <button
+                    onClick={() =>
+                      window.open(
+                        "https://vahan.parivahan.gov.in/vahanservice/vahan/ui/statevalidation/homepage.xhtml",
+                        "_blank"
+                      )
+                    }
+                    className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition"
+                  >
+                    Check RC Status
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
