@@ -40,7 +40,6 @@ const AuthFlow = () => {
     lastName: "",
     phoneNumber: "",
     gender: "",
-    dob: "",
     licenseNumber: "",
     vehicleNumber: "",
     vehicleType: "",
@@ -605,19 +604,6 @@ const AuthFlow = () => {
 
               {userType === "driver" && (
                 <>
-                  <div>
-                    <label htmlFor="DOB" className="block text-gray-700 mb-1">
-                      Date-Of-Birth
-                    </label>
-                    <input
-                      type="date"
-                      id="dob"
-                      required
-                      value={formData.dob}
-                      onChange={handleChange}
-                      className="border border-gray-300 p-2 rounded w-full"
-                    />
-                  </div>
                   <div>
                     <label
                       htmlFor="licenseNumber"
