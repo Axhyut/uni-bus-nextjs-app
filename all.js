@@ -57,6 +57,10 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false
     },
+    dob: {
+      type: DataTypes.DATE,
+      allowNull: false
+    },
     licenseNumber: {
       type: DataTypes.STRING,
       unique: true,
