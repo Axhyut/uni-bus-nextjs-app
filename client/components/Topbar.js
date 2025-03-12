@@ -1,46 +1,48 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { UserCircle, LogOut } from 'lucide-react';
-import { auth } from '@/components/firebase/firebaseconfig';
-import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { UserCircle, LogOut } from "lucide-react";
+import { auth } from "@/components/firebase/firebaseconfig";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const TopBar = () => {
   const router = useRouter();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isRegistrationComplete, setIsRegistrationComplete] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-  const [userType, setUserType] = useState('');
-  const BASE_URL = 'https://ridewise-server.vercel.app';
+  const [userEmail, setUserEmail] = useState("");
+  const [userType, setUserType] = useState("");
+  const BASE_URL = "https://ridewise-server.vercel.app";
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user?.email) {
         try {
-          const response = await axios.get(`https://ridewise-server.vercel.app/api/auth/user/${user.email}`);
-          setIsRegistrationComplete(response.data.userType === 'driver');
-          if (response.data.userType === 'driver') {
+          const response = await axios.get(
+            `${BASE_URL}/api/auth/user/${user.email}`
+          );
+          setIsRegistrationComplete(response.data.userType === "driver");
+          if (response.data.userType === "driver") {
             setIsLoggedIn(true);
             setUserEmail(user.email);
-            setUserType(response.data.userType || '');
+            setUserType(response.data.userType || "");
           } else {
             setIsLoggedIn(false);
-            setUserEmail('');
-            setUserType('');
+            setUserEmail("");
+            setUserType("");
           }
         } catch (error) {
-          console.error('Error checking user registration:', error);
+          console.error("4Error checking user registration:", error);
           setIsLoggedIn(false);
           setIsRegistrationComplete(false);
         }
       } else {
         setIsLoggedIn(false);
         setIsRegistrationComplete(false);
-        setUserEmail('');
-        setUserType('');
+        setUserEmail("");
+        setUserType("");
       }
     });
 
@@ -52,11 +54,11 @@ const TopBar = () => {
       await signOut(auth);
       setIsRegistrationComplete(false);
       setIsLoggedIn(false);
-      setUserEmail('');
-      setUserType('');
-      router.push('/');
+      setUserEmail("");
+      setUserType("");
+      router.push("/");
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     }
   };
 
@@ -85,12 +87,6 @@ const TopBar = () => {
               {isProfileMenuOpen && (
                 <div className="absolute right-0 mt-4 w-28 rounded-md shadow-lg bg-white text-black border-gray-700 border-[2px]">
                   <div className="py-1">
-                    {/* <div className="px-4 py-2 text-sm border-b border-gray-200">
-                      {userEmail}
-                    </div>
-                    <div className="px-4 py-2 text-sm border-b border-gray-200">
-                      {userType.charAt(0).toUpperCase() + userType.slice(1)}
-                    </div> */}
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center space-x-2 font-extrabold text-black"
