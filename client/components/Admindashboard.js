@@ -90,15 +90,22 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
               {driver.licenseNumber}
             </td>
             <td className="px-6 py-4 whitespace-nowrap">
-              {driver.status === "active" ? (
-                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                  Verified
-                </span>
-              ) : (
-                <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                  Pending
-                </span>
-              )}
+            <span
+  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+    driver.status === "active"
+      ? "bg-green-100 text-green-800"
+      : driver.status === "expired"
+      ? "bg-red-100 text-red-800"
+      : "bg-yellow-100 text-yellow-800"
+  }`}
+>
+  {driver.status === "active"
+    ? "Verified"
+    : driver.status === "expired"
+    ? "Expired"
+    : "Pending"}
+</span>
+
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
               {driver.status === "inactive" ? (

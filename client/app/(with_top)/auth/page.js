@@ -240,7 +240,7 @@ const AuthFlow = () => {
       setRegistrationComplete(true);
       router.push(userType === "driver" ? "/dashboard" : "/");
     } catch (error) {
-      setError("Error registering user");
+      setError("The user already exists");
       await handleSignOut();
     } finally {
       setLoading(false);
@@ -688,6 +688,7 @@ const AuthFlow = () => {
                       value={formData.licenseValidity}
                       onChange={handleChange}
                       className="border border-gray-300 p-2 rounded w-full"
+                      min={new Date().toISOString().split("T")[0]}
                     />
                   </div>
                 </>
