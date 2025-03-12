@@ -38,6 +38,7 @@ const AuthFlow = () => {
     email: "",
     firstName: "",
     lastName: "",
+    dateOfBirth: "",
     phoneNumber: "",
     gender: "",
     licenseNumber: "",
@@ -211,6 +212,7 @@ const AuthFlow = () => {
         email: "",
         firstName: "",
         lastName: "",
+        dateOfBirth: "",
         phoneNumber: "",
         gender: "",
         licenseNumber: "",
@@ -565,7 +567,26 @@ const AuthFlow = () => {
                   className="border border-gray-300 p-2 rounded w-full"
                 />
               </div>
-
+              {userType === "driver" ? (
+                <div>
+                  <label
+                    htmlFor="dateOfBirth"
+                    className="block text-gray-700 mb-1"
+                  >
+                    Date-Of-Birth
+                  </label>
+                  <input
+                    type="date"
+                    id="dateOfBirth"
+                    required
+                    value={formData.dateOfBirth}
+                    onChange={handleChange}
+                    className="border border-gray-300 p-2 rounded w-full"
+                  />
+                </div>
+              ) : (
+                ""
+              )}
               <div>
                 <label
                   htmlFor="phoneNumber"
