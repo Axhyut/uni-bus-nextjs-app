@@ -4,34 +4,6 @@ import axios from "axios";
 import { UserCircle, CheckCircle, XCircle } from "lucide-react";
 import Swal from "sweetalert2";
 
-// Dashboard Tabs Component
-const DashboardTabs = ({ activeTab, setActiveTab }) => (
-  <div className="mb-6 border-b border-gray-200">
-    <div className="flex space-x-8">
-      <button
-        className={`py-4 px-1 border-b-2 font-medium text-sm ${
-          activeTab === "drivers"
-            ? "border-blue-500 text-blue-600"
-            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-        }`}
-        onClick={() => setActiveTab("drivers")}
-      >
-        Drivers
-      </button>
-      <button
-        className={`py-4 px-1 border-b-2 font-medium text-sm ${
-          activeTab === "passengers"
-            ? "border-blue-500 text-blue-600"
-            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-        }`}
-        onClick={() => setActiveTab("passengers")}
-      >
-        Passengers
-      </button>
-    </div>
-  </div>
-);
-
 // Drivers Table Component
 const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
   <div className="overflow-x-auto">
@@ -113,7 +85,12 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
               </span>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              {driver.status === "inactive" ? (
+              {driver.status === "active" ? (
+                <span className="text-green-600 flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" />
+                  Verified
+                </span>
+              ) : (
                 <button
                   onClick={() => handleVerifyDriver(driver.id)}
                   disabled={isLoading}
@@ -122,11 +99,6 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
                   <CheckCircle className="w-4 h-4" />
                   Verify
                 </button>
-              ) : (
-                <span className="text-green-600 flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4" />
-                  Verified
-                </span>
               )}
             </td>
           </tr>
@@ -204,12 +176,14 @@ const Admindashboard = ({ adminName, onLogout }) => {
   const BASE_URL = "https://ridewise-server.vercel.app";
 
   // Fetch drivers and passengers data
+  const [refresh, setRefresh] = useState(false); // State to trigger data refresh
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [driversRes, passengersRes] = await Promise.all([
-          axios.get("https://ridewise-server.vercel.app/api/drivers"),
-          axios.get("https://ridewise-server.vercel.app/api/passengers"),
+          axios.get(`${BASE_URL}/api/drivers`),
+          axios.get(`${BASE_URL}/api/passengers`),
         ]);
         setDrivers(driversRes.data);
         setPassengers(passengersRes.data);
@@ -219,7 +193,7 @@ const Admindashboard = ({ adminName, onLogout }) => {
     };
 
     fetchData();
-  }, []);
+  }, [refresh]); // Depend on refresh state to re-fetch automatically
 
   const handleVerifyDriver = async (driverId) => {
     Swal.fire({
@@ -234,21 +208,13 @@ const Admindashboard = ({ adminName, onLogout }) => {
       if (result.isConfirmed) {
         setIsLoading(true);
         try {
-          await axios.patch(
-            `https://ridewise-server.vercel.app/api/drivers/${driverId}/verify`,
-            {
-              status: "active",
-            }
-          );
+          await axios.patch(`${BASE_URL}/api/drivers/${driverId}/verify`, {
+            status: "active",
+          });
 
-          // Update the drivers list
-          setDrivers(
-            drivers.map((driver) =>
-              driver.id === driverId ? { ...driver, status: "active" } : driver
-            )
-          );
+          // Instead of manually updating the driver, trigger a refresh
+          setRefresh((prev) => !prev);
 
-          // Show success message
           Swal.fire({
             title: "Verified",
             text: "Your driver is active now!",

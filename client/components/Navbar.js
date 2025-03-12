@@ -1,11 +1,11 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Menu, X, UserCircle, LogOut } from 'lucide-react';
-import { auth } from '@/components/firebase/firebaseconfig';
-import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
+"use client";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { Menu, X, UserCircle, LogOut, Edit } from "lucide-react";
+import { auth } from "@/components/firebase/firebaseconfig";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const Navbar = () => {
   const router = useRouter();
@@ -13,12 +13,12 @@ const Navbar = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isRegistrationComplete, setIsRegistrationComplete] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
-  const [userType, setUserType] = useState('');
-  const [userName, setUserName] = useState('');
-  const [profilePic, setProfilePic] = useState('');
+  const [userEmail, setUserEmail] = useState("");
+  const [userType, setUserType] = useState("");
+  const [userName, setUserName] = useState("");
+  const [profilePic, setProfilePic] = useState("");
 
-  const BASE_URL = 'https://ridewise-server.vercel.app';
+  const BASE_URL = "https://ridewise-server.vercel.app";
 
   // Listen to auth state changes and check registration status
   useEffect(() => {
@@ -26,30 +26,32 @@ const Navbar = () => {
       if (user?.email) {
         try {
           // Check if user exists in backend and is fully registered and is passenger
-          const response = await axios.get(`https://ridewise-server.vercel.app/api/auth/user/${user.email}`);
+          const response = await axios.get(
+            `https://ridewise-server.vercel.app/api/auth/user/${user.email}`
+          );
           setIsRegistrationComplete(response.data.exists);
-          console.log('Checking user registration:', response.data);
+          console.log("Checking user registration:", response.data);
           if (response.data.exists) {
             setIsLoggedIn(true);
             setUserEmail(user.email);
-            setUserType(response.data.userType || '');
-            setUserName(response.data.userName || '');
-            setProfilePic(user.photoURL || '');
+            setUserType(response.data.userType || "");
+            setUserName(response.data.userName || "");
+            setProfilePic(user.photoURL || "");
           } else {
             setIsLoggedIn(false);
-            setUserEmail('');
-            setUserType('');
+            setUserEmail("");
+            setUserType("");
           }
         } catch (error) {
-          console.error('Error checking user registration:', error);
+          console.error("3Error checking user registration:", error);
           setIsLoggedIn(false);
           setIsRegistrationComplete(false);
         }
       } else {
         setIsLoggedIn(false);
         setIsRegistrationComplete(false);
-        setUserEmail('');
-        setUserType('');
+        setUserEmail("");
+        setUserType("");
       }
     });
 
@@ -61,12 +63,16 @@ const Navbar = () => {
       await signOut(auth);
       setIsRegistrationComplete(false);
       setIsLoggedIn(false);
-      setUserEmail('');
-      setUserType('');
-      router.push('/');
+      setUserEmail("");
+      setUserType("");
+      router.push("/");
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     }
+  };
+
+  const handleProfileEdit = async () => {
+    router.push("/profile");
   };
 
   return (
@@ -84,25 +90,37 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {/* Other navigation links */}
             <Link href="/">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Ride</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                Ride
+              </button>
             </Link>
             <Link href="/dashboard">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Drive</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                Drive
+              </button>
             </Link>
             <Link href="/help">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Help</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                Help
+              </button>
             </Link>
             <Link href="/about">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">About</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                About
+              </button>
             </Link>
             <Link href="/contact">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Contact</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                Contact
+              </button>
             </Link>
 
             {!isLoggedIn || !isRegistrationComplete ? (
               <>
                 <Link href="/auth">
-                  <button className="px-3 py-2 text-white hover:text-gray-200">Log in</button>
+                  <button className="px-3 py-2 text-white hover:text-gray-200">
+                    Log in
+                  </button>
                 </Link>
                 <Link href="/auth">
                   <button className="px-3 py-2 bg-white text-black font-medium rounded hover:bg-gray-100 transition-colors">
@@ -129,23 +147,35 @@ const Navbar = () => {
 
                 {/* Profile dropdown menu */}
                 {isProfileMenuOpen && (
-                  <div className="absolute right-[-60px] mt-4 w-36 rounded-md shadow-lg bg-white text-black border-gray-700 border-[2px]">
-                    <div className="py-1">
-                      <div className="px-4 py-2 text-sm border-b border-gray-200">
-                        {userName}
-                      </div>
-                      <div className="px-4 py-2 text-sm border-b border-gray-200">
+                  <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-xl bg-white text-black border border-gray-100 origin-top-right focus:outline-none z-50">
+                  <div className="py-2">
+                    {/* User Info Section */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="text-sm font-semibold text-gray-900 truncate">{userName}</div>
+                      <div className="text-xs font-medium text-gray-500 mt-1">
                         {userType.charAt(0).toUpperCase() + userType.slice(1)}
                       </div>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center space-x-2 font-extrabold text-black"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        <span>Logout</span>
-                      </button>
                     </div>
+                
+                    {/* Edit Profile Button */}
+                    <button
+                      onClick={handleProfileEdit}
+                      className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700 transition-colors"
+                    >
+                      <Edit className="h-4 w-4 text-gray-600" />
+                      <span>Edit Profile</span>
+                    </button>
+                
+                    {/* Logout Button */}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4 text-gray-600" />
+                      <span>Logout</span>
+                    </button>
                   </div>
+                </div>
                 )}
               </div>
             )}
@@ -157,7 +187,11 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="text-white hover:text-gray-200 focus:outline-none"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -169,28 +203,42 @@ const Navbar = () => {
           <div className="px-2 pt-2 pb-3 space-y-1 bg-black">
             {/* Mobile navigation links */}
             <Link href="/">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Ride</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                Ride
+              </button>
             </Link>
             <Link href="/dashboard">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Drive</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                Drive
+              </button>
             </Link>
             <Link href="/help">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Help</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                Help
+              </button>
             </Link>
             <Link href="/about">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">About</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                About
+              </button>
             </Link>
             <Link href="/contact">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Contact</button>
+              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                Contact
+              </button>
             </Link>
 
             {!isLoggedIn || !isRegistrationComplete ? (
               <>
                 <Link href="/auth">
-                  <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Log in</button>
+                  <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                    Log in
+                  </button>
                 </Link>
                 <Link href="/auth">
-                  <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">Sign up</button>
+                  <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
+                    Sign up
+                  </button>
                 </Link>
               </>
             ) : (
