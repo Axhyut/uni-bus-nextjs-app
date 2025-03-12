@@ -11,6 +11,7 @@ router.get('/api/drivers', async (req, res) => {
         'id',
         'firstName',
         'lastName',
+        'dateOfBirth',
         'email',
         'phoneNumber',
         'vehicleNumber',

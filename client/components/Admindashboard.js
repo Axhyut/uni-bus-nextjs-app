@@ -42,6 +42,9 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
             Name
           </th>
           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Date Of Birth
+          </th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
             Email
           </th>
           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -73,6 +76,9 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
                   <div className="text-sm text-gray-500">{driver.gender}</div>
                 </div>
               </div>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {driver.dateOfBirth}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {driver.email}

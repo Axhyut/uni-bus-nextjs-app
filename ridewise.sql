@@ -16,6 +16,7 @@ CREATE TABLE Driver (
   email VARCHAR(255) UNIQUE NOT NULL,
   firstName VARCHAR(255) NOT NULL,
   lastName VARCHAR(255) NOT NULL,
+  dateOfBirth DATE NOT NULL,
   phoneNumber VARCHAR(255) NOT NULL,
   licenseNumber VARCHAR(255) UNIQUE NOT NULL,
   vehicleNumber VARCHAR(255) UNIQUE NOT NULL,
