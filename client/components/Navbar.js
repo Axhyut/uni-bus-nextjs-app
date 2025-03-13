@@ -27,7 +27,7 @@ const Navbar = () => {
         try {
           // Check if user exists in backend and is fully registered and is passenger
           const response = await axios.get(
-            `https://ridewise-server.vercel.app/api/auth/user/${user.email}`
+            `${BASE_URL}/api/auth/user/${user.email}`
           );
           setIsRegistrationComplete(response.data.exists);
           console.log("Checking user registration:", response.data);
@@ -129,11 +129,14 @@ const Navbar = () => {
                 </Link>
               </>
             ) : (
-              <div className="relative">
-                <button
-                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="flex items-center space-x-2 text-white hover:text-gray-200 focus:outline-none"
-                >
+              // ... (previous imports and code remain the same)
+
+              <div
+                className="relative"
+                onMouseEnter={() => setIsProfileMenuOpen(true)}
+                onMouseLeave={() => setIsProfileMenuOpen(false)}
+              >
+                <button className="flex items-center space-x-2 text-white hover:text-gray-200 focus:outline-none">
                   {profilePic ? (
                     <img
                       src={profilePic}
@@ -147,37 +150,38 @@ const Navbar = () => {
 
                 {/* Profile dropdown menu */}
                 {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-xl bg-white text-black border border-gray-100 origin-top-right focus:outline-none z-50">
-                  <div className="py-2">
-                    {/* User Info Section */}
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <div className="text-sm font-semibold text-gray-900 truncate">{userName}</div>
-                      <div className="text-xs font-medium text-gray-500 mt-1">
-                        {userType.charAt(0).toUpperCase() + userType.slice(1)}
+                  <div className="absolute right-0 top-full w-56 rounded-lg shadow-xl bg-white text-black border border-gray-100 origin-top-right focus:outline-none z-50">
+                    <div className="py-2">
+                      {/* User Info Section */}
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="text-sm font-semibold text-gray-900 truncate">
+                          {userName}
+                        </div>
                       </div>
+
+                      {/* Edit Profile Button */}
+                      <button
+                        onClick={handleProfileEdit}
+                        className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700 transition-colors"
+                      >
+                        <Edit className="h-4 w-4 text-gray-600" />
+                        <span>Edit Profile</span>
+                      </button>
+
+                      {/* Logout Button */}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700 transition-colors"
+                      >
+                        <LogOut className="h-4 w-4 text-gray-600" />
+                        <span>Logout</span>
+                      </button>
                     </div>
-                
-                    {/* Edit Profile Button */}
-                    <button
-                      onClick={handleProfileEdit}
-                      className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700 transition-colors"
-                    >
-                      <Edit className="h-4 w-4 text-gray-600" />
-                      <span>Edit Profile</span>
-                    </button>
-                
-                    {/* Logout Button */}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center space-x-3 text-gray-700 transition-colors"
-                    >
-                      <LogOut className="h-4 w-4 text-gray-600" />
-                      <span>Logout</span>
-                    </button>
                   </div>
-                </div>
                 )}
               </div>
+
+              // ... (rest of the code remains the same)
             )}
           </div>
 

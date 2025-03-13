@@ -3,9 +3,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { auth } from "@/components/firebase/firebaseconfig";
 import Navbar from "@/components/Navbar";
-import DriverScheduleApp from "@/components/driver/DriverScheduleApp";
-import PendingVerification from "@/components/driver/PendingVerification";
-import LicenseExpired from "@/components/driver/LicenseExpired";
 
 const Dashboard = () => {
   const [isDriverAccount, setIsDriverAccount] = useState(false);
@@ -62,13 +59,6 @@ const Dashboard = () => {
   return (
     <>
       <Navbar />
-      {isDriverAccount && driverStatus === "inactive" ? (
-        <PendingVerification />
-      ) : isDriverAccount && driverStatus === "expired" ? (
-        <LicenseExpired />
-      ) : (
-        <DriverScheduleApp />
-      )}
     </>
   );
 };
