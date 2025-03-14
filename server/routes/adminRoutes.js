@@ -1,99 +1,123 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { Driver, Passenger } = require('../models');
-const { Op } = require('sequelize');
+const { Driver, Passenger } = require("../models");
+const { Op } = require("sequelize");
+const {
+  sendEmail,
+  generateVerificationEmail,
+} = require("../utils/emailService");
 
 // Get all drivers
-router.get('/api/drivers', async (req, res) => {
+router.get("/api/drivers", async (req, res) => {
   try {
     const drivers = await Driver.findAll({
       attributes: [
-        'id',
-        'firstName',
-        'lastName',
-        'dateOfBirth',
-        'email',
-        'phoneNumber',
-        'vehicleNumber',
-        'vehicleType',
-        'status',
-        'gender',
-        'licenseNumber',
-        'rating',
-        'isAvailable'
+        "id",
+        "firstName",
+        "lastName",
+        "dateOfBirth",
+        "email",
+        "phoneNumber",
+        "vehicleNumber",
+        "vehicleType",
+        "status",
+        "gender",
+        "licenseNumber",
+        "rating",
+        "isAvailable",
       ],
-      order: [['createdAt', 'DESC']]
+      order: [["createdAt", "DESC"]],
     });
     res.json(drivers);
   } catch (error) {
-    console.error('Error fetching drivers:', error);
-    res.status(500).json({ error: 'Failed to fetch drivers' });
+    console.error("Error fetching drivers:", error);
+    res.status(500).json({ error: "Failed to fetch drivers" });
   }
 });
 
 // Get all passengers
-router.get('/api/passengers', async (req, res) => {
+router.get("/api/passengers", async (req, res) => {
   try {
     const passengers = await Passenger.findAll({
       attributes: [
-        'id',
-        'firstName',
-        'lastName',
-        'email',
-        'phoneNumber',
-        'gender',
-        'status',
-        'createdAt'
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "phoneNumber",
+        "gender",
+        "status",
+        "createdAt",
       ],
-      order: [['createdAt', 'DESC']]
+      order: [["createdAt", "DESC"]],
     });
     res.json(passengers);
   } catch (error) {
-    console.error('Error fetching passengers:', error);
-    res.status(500).json({ error: 'Failed to fetch passengers' });
+    console.error("Error fetching passengers:", error);
+    res.status(500).json({ error: "Failed to fetch passengers" });
   }
 });
 
 // Verify driver (update status)
-router.patch('/api/drivers/:id/verify', async (req, res) => {
+router.patch("/api/drivers/:id/verify", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
   try {
     const driver = await Driver.findByPk(id);
-    
+
     if (!driver) {
-      return res.status(404).json({ error: 'Driver not found' });
+      return res.status(404).json({ error: "Driver not found" });
     }
 
     await driver.update({ status });
-    
-    res.json({ 
-      message: 'Driver status updated successfully',
+
+    res.json({
+      message: "Driver status updated successfully",
       driver: {
         id: driver.id,
-        status: driver.status
-      }
+        status: driver.status,
+      },
     });
+
+    try {
+      const [driverVerificationEmailSent] = await Promise.allSettled([
+        sendEmail(driver.email, generateVerificationEmail(driver)),
+      ]);
+
+      // Log email sending results
+      logger.info("Email Sending Results", {
+        driver: driverVerificationEmailSent.status,
+      });
+
+      // Optional: You could implement a notification system
+      // for failed email sends if needed
+    } catch (emailError) {
+      logger.error("Email Sending Error", {
+        error: emailError,
+        driver: driver.id,
+      });
+      // Non-blocking email error
+    }
   } catch (error) {
-    console.error('Error updating driver status:', error);
-    res.status(500).json({ error: 'Failed to update driver status' });
+    console.error("Error updating driver status:", error);
+    res.status(500).json({ error: "Failed to update driver status" });
   }
 });
 
 // Get dashboard statistics
-router.get('/api/admin/dashboard/stats', async (req, res) => {
+router.get("/api/admin/dashboard/stats", async (req, res) => {
   try {
     const totalDrivers = await Driver.count();
     const activeDrivers = await Driver.count({
-      where: { status: 'active' }
+      where: { status: "active" },
     });
     const pendingDrivers = await Driver.count({
-      where: { status: 'inactive' }
+      where: { status: "inactive" },
     });
     const totalPassengers = await Passenger.count();
     const activePassengers = await Passenger.count({
-      where: { status: 'active' }
+      where: { status: "active" },
     });
 
     // Get new registrations in the last 7 days
@@ -101,16 +125,16 @@ router.get('/api/admin/dashboard/stats', async (req, res) => {
     const newDrivers = await Driver.count({
       where: {
         createdAt: {
-          [Op.gte]: lastWeek
-        }
-      }
+          [Op.gte]: lastWeek,
+        },
+      },
     });
     const newPassengers = await Passenger.count({
       where: {
         createdAt: {
-          [Op.gte]: lastWeek
-        }
-      }
+          [Op.gte]: lastWeek,
+        },
+      },
     });
 
     res.json({
@@ -118,24 +142,24 @@ router.get('/api/admin/dashboard/stats', async (req, res) => {
         total: totalDrivers,
         active: activeDrivers,
         pending: pendingDrivers,
-        newLastWeek: newDrivers
+        newLastWeek: newDrivers,
       },
       passengers: {
         total: totalPassengers,
         active: activePassengers,
-        newLastWeek: newPassengers
-      }
+        newLastWeek: newPassengers,
+      },
     });
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard statistics' });
+    console.error("Error fetching dashboard stats:", error);
+    res.status(500).json({ error: "Failed to fetch dashboard statistics" });
   }
 });
 
 // Search drivers
-router.get('/api/drivers/search', async (req, res) => {
+router.get("/api/drivers/search", async (req, res) => {
   const { query } = req.query;
-  
+
   try {
     const drivers = await Driver.findAll({
       where: {
@@ -143,73 +167,73 @@ router.get('/api/drivers/search', async (req, res) => {
           { firstName: { [Op.iLike]: `%${query}%` } },
           { lastName: { [Op.iLike]: `%${query}%` } },
           { email: { [Op.iLike]: `%${query}%` } },
-          { vehicleNumber: { [Op.iLike]: `%${query}%` } }
-        ]
-      }
+          { vehicleNumber: { [Op.iLike]: `%${query}%` } },
+        ],
+      },
     });
-    
+
     res.json(drivers);
   } catch (error) {
-    console.error('Error searching drivers:', error);
-    res.status(500).json({ error: 'Failed to search drivers' });
+    console.error("Error searching drivers:", error);
+    res.status(500).json({ error: "Failed to search drivers" });
   }
 });
 
 // Search passengers
-router.get('/api/passengers/search', async (req, res) => {
+router.get("/api/passengers/search", async (req, res) => {
   const { query } = req.query;
-  
+
   try {
     const passengers = await Passenger.findAll({
       where: {
         [Op.or]: [
           { firstName: { [Op.iLike]: `%${query}%` } },
           { lastName: { [Op.iLike]: `%${query}%` } },
-          { email: { [Op.iLike]: `%${query}%` } }
-        ]
-      }
+          { email: { [Op.iLike]: `%${query}%` } },
+        ],
+      },
     });
-    
+
     res.json(passengers);
   } catch (error) {
-    console.error('Error searching passengers:', error);
-    res.status(500).json({ error: 'Failed to search passengers' });
+    console.error("Error searching passengers:", error);
+    res.status(500).json({ error: "Failed to search passengers" });
   }
 });
 
 // Get driver details by ID
-router.get('/api/drivers/:id', async (req, res) => {
+router.get("/api/drivers/:id", async (req, res) => {
   const { id } = req.params;
-  
+
   try {
     const driver = await Driver.findByPk(id);
-    
+
     if (!driver) {
-      return res.status(404).json({ error: 'Driver not found' });
+      return res.status(404).json({ error: "Driver not found" });
     }
-    
+
     res.json(driver);
   } catch (error) {
-    console.error('Error fetching driver details:', error);
-    res.status(500).json({ error: 'Failed to fetch driver details' });
+    console.error("Error fetching driver details:", error);
+    res.status(500).json({ error: "Failed to fetch driver details" });
   }
 });
 
 // Get passenger details by ID
-router.get('/api/passengers/:id', async (req, res) => {
+router.get("/api/passengers/:id", async (req, res) => {
   const { id } = req.params;
-  
+
   try {
     const passenger = await Passenger.findByPk(id);
-    
+
     if (!passenger) {
-      return res.status(404).json({ error: 'Passenger not found' });
+      return res.status(404).json({ error: "Passenger not found" });
     }
-    
+
     res.json(passenger);
   } catch (error) {
-    console.error('Error fetching passenger details:', error);
-    res.status(500).json({ error: 'Failed to fetch passenger details' });
+    console.error("Error fetching passenger details:", error);
+    res.status(500).json({ error: "Failed to fetch passenger details" });
   }
 });
 
