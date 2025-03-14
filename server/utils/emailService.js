@@ -1,5 +1,5 @@
-const nodemailer = require('nodemailer');
-require('dotenv').config();
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 // Create a more robust transporter
 const createTransporter = () => {
@@ -13,15 +13,15 @@ const createTransporter = () => {
       pass: process.env.SMTP_PASSWORD,
     },
     tls: {
-      rejectUnauthorized: true
-    }
+      rejectUnauthorized: true,
+    },
   });
 };
 
 // Generate passenger email content
 const generatePassengerEmail = (pnr, driver) => {
   const subject = `Booking Confirmation - PNR: ${pnr.PNRid}`;
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333;">Your Ride is Confirmed!</h2>
@@ -57,7 +57,7 @@ const generatePassengerEmail = (pnr, driver) => {
 // Generate driver email content
 const generateDriverEmail = (pnr, passenger) => {
   const subject = `New Ride Assignment - PNR: ${pnr.PNRid}`;
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333;">New Ride Assignment</h2>
@@ -87,67 +87,10 @@ const generateDriverEmail = (pnr, passenger) => {
   return { subject, html };
 };
 
-// Enhanced send email function with comprehensive error handling
-// const sendEmail = async (to, { subject, html }, retries = 2) => {
-//   // Validate email address
-//   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-//   if (!emailRegex.test(to)) {
-//     console.error(`Invalid email address: ${to}`);
-//     return false;
-//   }
-
-//   // Create transporter for each send attempt
-//   const transporter = createTransporter();
-
-//   for (let attempt = 1; attempt <= retries + 1; attempt++) {
-//     try {
-//       console.log(`Email sending attempt ${attempt}:`, {
-//         to,
-//         subject,
-//         fromEmail: process.env.SMTP_FROM_EMAIL
-//       });
-
-//       const mailOptions = {
-//         from: process.env.SMTP_FROM_EMAIL,
-//         to,
-//         subject,
-//         html,
-//       };
-
-//       const info = await transporter.sendMail(mailOptions);
-      
-//       console.log('Email sent successfully:', {
-//         messageId: info.messageId,
-//         accepted: info.accepted,
-//         rejected: info.rejected
-//       });
-
-//       return true;
-//     } catch (error) {
-//       console.error(`Email sending error (Attempt ${attempt}):`, {
-//         message: error.message,
-//         code: error.code,
-//         stack: error.stack
-//       });
-
-//       // If it's the last retry, throw the error
-//       if (attempt === retries + 1) {
-//         throw error;
-//       }
-
-//       // Wait a bit before retrying
-//       await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
-//     }
-//   }
-
-//   return false;
-// };
-
-
 // Generate ride completion email for passenger
 const generateRideCompletionPassengerEmail = (pnr, driver) => {
   const subject = `Ride Completed Successfully - PNR: ${pnr.PNRid}`;
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333;">Ride Completed Successfully</h2>
@@ -183,7 +126,7 @@ const generateRideCompletionPassengerEmail = (pnr, driver) => {
 // Generate ride completion email for driver
 const generateRideCompletionDriverEmail = (pnr, passenger) => {
   const subject = `Ride Completed Successfully - PNR: ${pnr.PNRid}`;
-  
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333;">Ride Successfully Completed</h2>
@@ -214,6 +157,34 @@ const generateRideCompletionDriverEmail = (pnr, passenger) => {
   return { subject, html };
 };
 
+const generateVerificationEmail = (driver) => {
+  const subject = `RideWise Account Verification Complete`;
+  const html = `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <h2 style="color: #333;">Account Verification Complete</h2>
+    <p>Dear ${driver.firstName},</p>
+    <p>Congratulations! Your RideWise driver account has been successfully verified.</p>
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
+      <p><strong>Account Details:</strong></p>
+      <p><strong>Name:</strong> ${driver.firstName} ${driver.lastName}</p>
+      <p><strong>Driver ID:</strong> ${driver.driverId}</p>
+      <p><strong>Vehicle:</strong> ${driver.vehicleModel} (${driver.vehiclePlate})</p>
+    </div>
+    <div style="background-color: #e9ecef; padding: 20px; border-radius: 5px; margin: 20px 0;">
+      <h3 style="margin-top: 0;">Next Steps</h3>
+      <p>You can now:</p>
+      <p>✓ Schedule rides</p>
+      <p>✓ Receive payments directly to your linked account</p>
+      <p>✓ Access the driver dashboard</p>
+    </div>
+    <p>Log in to your RideWise driver app to start earning today!</p>
+    <p>For any assistance, please contact our driver support team at driversupport@ridewise.com.</p>
+    <p>Welcome to the RideWise community!</p>
+  </div>
+  `;
+  return { subject, html };
+};
+
 // Enhanced send email function
 const sendEmail = async (to, { subject, html }, retries = 2) => {
   const transporter = createTransporter();
@@ -228,18 +199,17 @@ const sendEmail = async (to, { subject, html }, retries = 2) => {
       };
 
       const info = await transporter.sendMail(mailOptions);
-      console.log('Email sent successfully:', info);
+      console.log("Email sent successfully:", info);
       return true;
     } catch (error) {
       console.error(`Email sending error (Attempt ${attempt}):`, error);
       if (attempt === retries + 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
     }
   }
 
   return false;
 };
-
 
 module.exports = {
   sendEmail,
@@ -247,4 +217,5 @@ module.exports = {
   generateDriverEmail,
   generateRideCompletionPassengerEmail,
   generateRideCompletionDriverEmail,
+  generateVerificationEmail,
 };
