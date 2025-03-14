@@ -167,8 +167,8 @@ const generateVerificationEmail = (driver) => {
     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
       <p><strong>Account Details:</strong></p>
       <p><strong>Name:</strong> ${driver.firstName} ${driver.lastName}</p>
-      <p><strong>Driver ID:</strong> ${driver.driverId}</p>
-      <p><strong>Vehicle:</strong> ${driver.vehicleModel} (${driver.vehiclePlate})</p>
+      <p><strong>Driver ID:</strong> ${driver.id}</p>
+      <p><strong>Vehicle:</strong> ${driver.vehicleNumber} (${driver.vehicleType})</p>
     </div>
     <div style="background-color: #e9ecef; padding: 20px; border-radius: 5px; margin: 20px 0;">
       <h3 style="margin-top: 0;">Next Steps</h3>
@@ -178,7 +178,7 @@ const generateVerificationEmail = (driver) => {
       <p>✓ Access the driver dashboard</p>
     </div>
     <p>Log in to your RideWise driver app to start earning today!</p>
-    <p>For any assistance, please contact our driver support team at driversupport@ridewise.com.</p>
+    <p>For any assistance, please contact our driver support team at ridewise.care@gmail.com</p>
     <p>Welcome to the RideWise community!</p>
   </div>
   `;
