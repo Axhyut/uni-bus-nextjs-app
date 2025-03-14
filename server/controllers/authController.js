@@ -127,6 +127,73 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { login };
+// Add these new functions
+const getProfile = async (req, res) => {
+  const { email } = req.params;
 
-module.exports = { signup, checkUserExistence, login };
+  try {
+    const driver = await Driver.findOne({ where: { email } });
+    if (driver) {
+      return res.json({
+        userType: "driver",
+        ...driver.dataValues,
+      });
+    }
+
+    const passenger = await Passenger.findOne({ where: { email } });
+    if (passenger) {
+      return res.json({
+        userType: "passenger",
+        ...passenger.dataValues,
+      });
+    }
+
+    return res.status(404).json({ error: "User not found" });
+  } catch (error) {
+    console.error("Error fetching profile:", error);
+    res.status(500).json({ error: "Error fetching profile" });
+  }
+};
+
+const updateProfile = async (req, res) => {
+  const { email } = req.params;
+  const updates = req.body;
+
+  try {
+    // Check if user is driver
+    const driver = await Driver.findOne({ where: { email } });
+    if (driver) {
+      await Driver.update(updates, { where: { email } });
+      const updatedDriver = await Driver.findOne({ where: { email } });
+      return res.json({
+        message: "Driver profile updated",
+        ...updatedDriver.dataValues,
+      });
+    }
+
+    // Check if user is passenger
+    const passenger = await Passenger.findOne({ where: { email } });
+    if (passenger) {
+      await Passenger.update(updates, { where: { email } });
+      const updatedPassenger = await Passenger.findOne({ where: { email } });
+      return res.json({
+        message: "Passenger profile updated",
+        ...updatedPassenger.dataValues,
+      });
+    }
+
+    return res.status(404).json({ error: "User not found" });
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ error: "Error updating profile" });
+  }
+};
+
+// Update exports
+module.exports = {
+  signup,
+  checkUserExistence,
+  login,
+  getProfile,
+  updateProfile,
+};

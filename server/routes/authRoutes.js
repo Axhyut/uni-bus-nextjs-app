@@ -1,14 +1,18 @@
-const express = require('express');
-const { signup,  checkUserExistence, login } = require('../controllers/authController'); // Import the signup function
+const express = require("express");
+const {
+  signup,
+  checkUserExistence,
+  login,
+  getProfile,
+  updateProfile,
+} = require("../controllers/authController");
 
 const router = express.Router();
 
-// POST /api/auth/signup
-router.post('/signup', signup);
-router.get('/user/:email', checkUserExistence);
-router.post('/admin/login', login);
-
+router.post("/signup", signup);
+router.get("/user/:email", checkUserExistence);
+router.post("/admin/login", login);
+router.get("/profile/:email", getProfile); // Get profile data
+router.put("/profile/:email", updateProfile); // Update profile
 
 module.exports = router;
-
-
