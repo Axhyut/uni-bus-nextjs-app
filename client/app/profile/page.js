@@ -35,7 +35,7 @@ const ProfileEdit = () => {
     setSuccess("");
 
     try {
-      const response = await axios.put(
+      const response = await axios.patch(
         `${BASE_URL}/api/auth/profile/${auth.currentUser.email}`,
         profileData
       );

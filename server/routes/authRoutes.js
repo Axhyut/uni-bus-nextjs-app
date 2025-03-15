@@ -13,6 +13,6 @@ router.post("/signup", signup);
 router.get("/user/:email", checkUserExistence);
 router.post("/admin/login", login);
 router.get("/profile/:email", getProfile); // Get profile data
-router.put("/profile/:email", updateProfile); // Update profile
+router.patch("/profile/:email", updateProfile); // Update profile
 
 module.exports = router;
