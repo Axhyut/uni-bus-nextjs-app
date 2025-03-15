@@ -113,14 +113,53 @@ const ProfileEdit = () => {
               />
             </div>
 
+            <div>
+              <label className="block mb-2">Gender</label>
+              <select
+                name="gender"
+                value={profileData.gender || ""}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                required
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
             {profileData.userType === "driver" && (
               <>
+                <div>
+                  <label className="block mb-2">Date Of Birth</label>
+                  <input
+                    type="date"
+                    name="dateOfBirth"
+                    value={profileData.dateOfBirth || ""}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    required
+                  />
+                </div>
                 <div>
                   <label className="block mb-2">License Number</label>
                   <input
                     type="text"
                     name="licenseNumber"
                     value={profileData.licenseNumber || ""}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block mb-2">License Validity</label>
+                  <input
+                    type="date"
+                    name="licenseValidity"
+                    value={profileData.licenseValidity || ""}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
                     required
@@ -149,9 +188,14 @@ const ProfileEdit = () => {
                     required
                   >
                     <option value="">Select Vehicle Type</option>
-                    <option value="car">Car</option>
-                    <option value="bike">Bike</option>
-                    <option value="suv">SUV</option>
+                    <option value="hatchback">Hatchback</option>
+                    <option value="sedan">Sedan</option>
+                    <option value="msuv">MUV/SUV</option>
+                    <option value="convertible">Convertible</option>
+                    <option value="coupe">Coupe</option>
+                    <option value="wagon">Wagon</option>
+                    <option value="jeep">Jeep</option>
+                    <option value="van">Van</option>
                   </select>
                 </div>
               </>
