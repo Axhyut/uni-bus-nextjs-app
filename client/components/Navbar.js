@@ -306,9 +306,24 @@ const Navbar = () => {
                 <div className="px-4 py-4 text-xs text-gray-300">
                   {userName}
                 </div>
-                <div className="px-4 py-2 text-sm text-gray-300">
-                  {userType.charAt(0).toUpperCase() + userType.slice(1)}
-                </div>
+                <button
+                  onClick={handleProfileEdit}
+                  className="w-full text-left px-4 py-2 text-white hover:bg-gray-900 rounded flex items-center space-x-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  <span>Edit Profile</span>
+                </button>
+                <button
+                  onClick={handleToggleAvailability}
+                  className="w-full text-left px-4 py-2 text-white hover:bg-gray-900 rounded flex items-center space-x-2"
+                >
+                  <div
+                    className={`h-4 w-4 rounded-full ${
+                      isAvailable ? "bg-green-500" : "bg-red-500"
+                    }`}
+                  />
+                  <span>Available?</span>
+                </button>
                 <button
                   onClick={handleLogout}
                   className="w-full text-left px-4 py-2 text-white hover:bg-gray-900 rounded flex items-center space-x-2"
