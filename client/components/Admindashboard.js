@@ -248,14 +248,12 @@ const Admindashboard = ({ adminName, onLogout }) => {
                 <br />
                 {adminName}
               </span>
-              <div className="relative">
-                <button
-                  onClick={() => setShowDropdown(!showDropdown)}
-                  className="inline-flex items-center p-2 rounded-full hover:bg-gray-100 transition-colors"
-                  title="Profile Menu"
-                >
-                  <UserCircle className="h-8 w-8" />
-                </button>
+              <div
+                className="relative"
+                onMouseEnter={() => setShowDropdown(true)}
+                onMouseLeave={() => setShowDropdown(false)}
+              >
+                <UserCircle className="h-8 w-8" />{" "}
                 {showDropdown && (
                   <div className="absolute right-[-25px] mt-0 w-24 rounded-md shadow-lg bg-white text-black border-gray-700 border-[2px]">
                     <button
