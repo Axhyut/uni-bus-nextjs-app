@@ -6,21 +6,16 @@ import Navbar from "@/components/Navbar";
 import Swal from "sweetalert2";
 
 const WalletPage = () => {
-  const [walletData, setWalletData] = useState({
-    balance: 0,
-    transactions: []
-  });
+  const [profileData, setProfileData] = useState(null);
   const [amount, setAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("credit_card");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [processing, setProcessing] = useState(false);
   const BASE_URL = "https://ridewise-server.vercel.app";
 
-  const fetchWallet = async (email) => {
+  const fetchProfile = async (email) => {
     try {
-      const response = await axios.get(`${BASE_URL}/api/wallet/${email}`);
-      setWalletData(response.data);
+      const response = await axios.get(`${BASE_URL}/api/auth/profile/${email}`);
+      setProfileData(response.data);
       setLoading(false);
     } catch (error) {
       setError("Failed to load wallet data");
@@ -28,70 +23,62 @@ const WalletPage = () => {
     }
   };
 
-  const handlePayment = async (e) => {
+  const handleAddFunds = async (e) => {
     e.preventDefault();
     setError("");
-    setProcessing(true);
 
     if (!amount || isNaN(amount) || amount <= 0) {
       setError("Please enter a valid amount");
-      setProcessing(false);
       return;
     }
 
-    try {
-      // Simulated payment processing
-      const paymentResult = await axios.post(`${BASE_URL}/api/payments`, {
-        amount: parseFloat(amount),
-        currency: "INR",
-        paymentMethod,
-        email: auth.currentUser.email
-      });
+    const result = await Swal.fire({
+      title: "Add Funds?",
+      text: `Are you sure you want to add ₹${amount} to your wallet?`,
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, add funds!",
+    });
 
-      if (paymentResult.data.success) {
-        // Update wallet balance
-        const updatedWallet = await axios.patch(
-          `${BASE_URL}/api/wallet/${auth.currentUser.email}/add`,
-          { amount: parseFloat(amount) }
+    if (result.isConfirmed) {
+      try {
+        const currentWallet = parseFloat(profileData.wallet) || 0;
+        const updatedWallet = currentWallet + parseFloat(amount);
+        
+        const updatedProfile = {
+          ...profileData,
+          wallet: updatedWallet
+        };
+
+        const response = await axios.patch(
+          `${BASE_URL}/api/auth/profile/${auth.currentUser.email}`,
+          updatedProfile
         );
 
-        setWalletData(prev => ({
-          balance: updatedWallet.data.balance,
-          transactions: [
-            ...prev.transactions,
-            {
-              amount: parseFloat(amount),
-              type: "credit",
-              date: new Date().toISOString(),
-              method: paymentMethod
-            }
-          ]
-        }));
-
+        setProfileData(response.data);
+        setAmount("");
         Swal.fire({
-          title: "Payment Successful!",
+          title: "Success!",
           text: `₹${amount} added to your wallet`,
           icon: "success",
           timer: 2000,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
-        setAmount("");
+      } catch (error) {
+        Swal.fire({
+          title: "Transaction Failed",
+          text: error.response?.data?.message || "Could not add funds",
+          icon: "error",
+        });
       }
-    } catch (error) {
-      Swal.fire({
-        title: "Payment Failed",
-        text: error.response?.data?.message || "Payment processing failed",
-        icon: "error"
-      });
-    } finally {
-      setProcessing(false);
     }
   };
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user?.email) {
-        fetchWallet(user.email);
+        fetchProfile(user.email);
       } else {
         setLoading(false);
         setError("User not authenticated");
@@ -110,20 +97,16 @@ const WalletPage = () => {
       <div className="max-w-2xl mx-auto p-4">
         <h1 className="text-2xl font-bold mb-6">Wallet</h1>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">Current Balance</h2>
-              <p className="text-3xl font-bold text-green-600">
-                ₹{walletData.balance.toFixed(2)}
-              </p>
-            </div>
-          </div>
+        <div className="bg-white p-6 rounded-lg shadow mb-8">
+          <h2 className="text-lg font-semibold mb-2">Current Balance</h2>
+          <p className="text-3xl font-bold text-green-600">
+            ₹{(parseFloat(profileData.wallet) || 0).toFixed(2)}
+          </p>
         </div>
 
-        <form onSubmit={handlePayment} className="space-y-4">
+        <form onSubmit={handleAddFunds} className="space-y-4">
           <div>
-            <label className="block mb-2">Add Money to Wallet</label>
+            <label className="block mb-2">Add Funds</label>
             <input
               type="number"
               value={amount}
@@ -136,60 +119,13 @@ const WalletPage = () => {
             />
           </div>
 
-          <div>
-            <label className="block mb-2">Payment Method</label>
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className="w-full p-2 border rounded"
-              required
-            >
-              <option value="credit_card">Credit Card</option>
-              <option value="debit_card">Debit Card</option>
-              <option value="upi">UPI</option>
-              <option value="net_banking">Net Banking</option>
-            </select>
-          </div>
-
           <button
             type="submit"
-            disabled={processing}
-            className={`bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 ${
-              processing ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
-            {processing ? "Processing..." : "Add Money"}
+            Add Money
           </button>
         </form>
-
-        <div className="mt-8">
-          <h2 className="text-lg font-semibold mb-4">Transaction History</h2>
-          {walletData.transactions.length === 0 ? (
-            <p className="text-gray-500">No transactions yet</p>
-          ) : (
-            <div className="space-y-4">
-              {walletData.transactions.map((transaction, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-4 border rounded"
-                >
-                  <div>
-                    <p className="font-medium">
-                      {transaction.type === "credit" ? "Added" : "Paid"}: ₹
-                      {transaction.amount.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(transaction.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <span className="text-sm text-gray-500 capitalize">
-                    {transaction.method.replace("_", " ")}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </>
   );

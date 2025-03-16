@@ -20,7 +20,7 @@ const Navbar = () => {
   const [profilePic, setProfilePic] = useState("");
   const [isAvailable, setIsAvailable] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [amt, setAmt]= useState("");
+  const [amt, setAmt] = useState("");
 
   const BASE_URL = "https://ridewise-server.vercel.app";
 
@@ -179,7 +179,10 @@ const Navbar = () => {
 
               <div
                 className="relative"
-                onMouseEnter={() => setIsProfileMenuOpen(true)}
+                onMouseEnter={() => {
+                  setIsProfileMenuOpen(true);
+                  fetchProfile(auth.currentUser.email);
+                }}
                 onMouseLeave={() => setIsProfileMenuOpen(false)}
               >
                 <button className="flex items-center space-x-2 text-white hover:text-gray-200 focus:outline-none">
