@@ -10,12 +10,14 @@ const WalletPage = () => {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [userType, setUserType] = useState("");
   const BASE_URL = "https://ridewise-server.vercel.app";
 
   const fetchProfile = async (email) => {
     try {
       const response = await axios.get(`${BASE_URL}/api/auth/profile/${email}`);
       setProfileData(response.data);
+      setUserType(response.data.userType);
       setLoading(false);
     } catch (error) {
       setError("Failed to load wallet data");
@@ -45,10 +47,10 @@ const WalletPage = () => {
       try {
         const currentWallet = parseFloat(profileData.wallet) || 0;
         const updatedWallet = currentWallet + parseFloat(amount);
-        
+
         const updatedProfile = {
           ...profileData,
-          wallet: updatedWallet
+          wallet: updatedWallet,
         };
 
         const response = await axios.patch(
@@ -69,6 +71,58 @@ const WalletPage = () => {
         Swal.fire({
           title: "Transaction Failed",
           text: error.response?.data?.message || "Could not add funds",
+          icon: "error",
+        });
+      }
+    }
+  };
+
+  const handleWithdrawFunds = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!amount || isNaN(amount) || amount <= 0) {
+      setError("Please enter a valid amount");
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Withdraw Funds?",
+      text: `Are you sure you want to withdraw ₹${amount} from your wallet?`,
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, withdraw funds!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const currentWallet = parseFloat(profileData.wallet) || 0;
+        const updatedWallet = currentWallet - parseFloat(amount);
+
+        const updatedProfile = {
+          ...profileData,
+          wallet: updatedWallet,
+        };
+
+        const response = await axios.patch(
+          `${BASE_URL}/api/auth/profile/${auth.currentUser.email}`,
+          updatedProfile
+        );
+
+        setProfileData(response.data);
+        setAmount("");
+        Swal.fire({
+          title: "Success!",
+          text: `₹${amount} withdrawn from your wallet`,
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        Swal.fire({
+          title: "Transaction Failed",
+          text: error.response?.data?.message || "Could not withdraw funds",
           icon: "error",
         });
       }
@@ -104,9 +158,18 @@ const WalletPage = () => {
           </p>
         </div>
 
-        <form onSubmit={handleAddFunds} className="space-y-4">
+        <form
+          onSubmit={
+            userType == "passenger" ? handleAddFunds : handleWithdrawFunds
+          }
+          className="space-y-4"
+        >
           <div>
-            <label className="block mb-2">Add Funds</label>
+            {userType == "passenger" ? (
+              <label className="block mb-2">Add Funds</label>
+            ) : (
+              <label className="block mb-2">Withdraw Funds</label>
+            )}
             <input
               type="number"
               value={amount}
@@ -118,13 +181,21 @@ const WalletPage = () => {
               required
             />
           </div>
-
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Add Money
-          </button>
+          {userType == "passenger" ? (
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Add Money
+            </button>
+          ) : (
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Withdraw Money
+            </button>
+          )}
         </form>
       </div>
     </>

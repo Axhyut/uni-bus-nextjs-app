@@ -175,8 +175,6 @@ const Navbar = () => {
                 </Link>
               </>
             ) : (
-              // ... (previous imports and code remain the same)
-
               <div
                 className="relative"
                 onMouseEnter={() => {
