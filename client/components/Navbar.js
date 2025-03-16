@@ -6,6 +6,7 @@ import { auth } from "@/components/firebase/firebaseconfig";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const Navbar = () => {
   const router = useRouter();
@@ -73,6 +74,34 @@ const Navbar = () => {
 
   const handleProfileEdit = async () => {
     router.push("/profile");
+  };
+
+  const [isAvailable, setIsAvailable] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleToggleAvailability = async () => {
+    if (isUpdating) return;
+
+    try {
+      setIsUpdating(true);
+      const newStatus = !isAvailable; // This needs to be declared outside try/catch
+
+      // Optimistic UI update
+      setIsAvailable(newStatus);
+
+      await axios.patch(
+        `${BASE_URL}/api/auth/profile/${auth.currentUser.email}`,
+        {
+          isAvailable: newStatus,
+        }
+      );
+    } catch (error) {
+      console.error("Update failed:", error);
+      // Rollback to previous state
+      setIsAvailable((prev) => !prev);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -159,6 +188,33 @@ const Navbar = () => {
                         </div>
                       </div>
 
+                      {/*toggle between availability*/}
+                      <button
+                        onClick={handleToggleAvailability}
+                        className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between text-gray-700 transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className={`h-4 w-4 rounded-full ${
+                              isAvailable ? "bg-green-500" : "bg-red-500"
+                            }`}
+                          />
+                          <span>Available?</span>
+                        </div>
+
+                        {/* Toggle Switch */}
+                        <div
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                            isAvailable ? "bg-green-200" : "bg-red-200"
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                              isAvailable ? "translate-x-4" : "translate-x-1"
+                            }`}
+                          />
+                        </div>
+                      </button>
                       {/* Edit Profile Button */}
                       <button
                         onClick={handleProfileEdit}

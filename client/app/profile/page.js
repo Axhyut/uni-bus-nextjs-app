@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { auth } from "@/components/firebase/firebaseconfig";
 import Navbar from "@/components/Navbar";
+import Swal from "sweetalert2";
 
 const ProfileEdit = () => {
   const [profileData, setProfileData] = useState(null);
@@ -34,17 +35,41 @@ const ProfileEdit = () => {
     setError("");
     setSuccess("");
 
-    try {
-      const response = await axios.patch(
-        `${BASE_URL}/api/auth/profile/${auth.currentUser.email}`,
-        profileData
-      );
+    // Show confirmation dialog FIRST
+    const result = await Swal.fire({
+      title: "Update Profile?",
+      text: "Are you sure you want to save these changes?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, update it!",
+      cancelButtonText: "Cancel",
+    });
 
-      setSuccess("Profile updated successfully!");
-      setTimeout(() => setSuccess(""), 3000);
-    } catch (error) {
-      setError("Failed to update profile");
-      console.error("Update error:", error);
+    // Only proceed if user confirmed
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.patch(
+          `${BASE_URL}/api/auth/profile/${auth.currentUser.email}`,
+          profileData
+        );
+
+        Swal.fire({
+          title: "Updated!",
+          text: "Your profile has been successfully updated.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        console.error("Update error:", error);
+        Swal.fire({
+          title: "Update Failed",
+          text: error.response?.data?.message || "Could not update profile",
+          icon: "error",
+        });
+      }
     }
   };
 
