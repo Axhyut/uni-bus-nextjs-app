@@ -25,6 +25,29 @@ const WalletPage = () => {
     }
   };
 
+  useEffect(() => {
+    let intervalId;
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user?.email) {
+        fetchProfile(user.email);
+        // Set up refresh interval
+        intervalId = setInterval(() => {
+          fetchProfile(user.email);
+        }, 5000);
+      } else {
+        setLoading(false);
+        setError("User not authenticated");
+        if (intervalId) clearInterval(intervalId);
+      }
+    });
+
+    // Cleanup function
+    return () => {
+      unsubscribe();
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, []);
+
   const handleAddFunds = async (e) => {
     e.preventDefault();
     setError("");
@@ -128,19 +151,6 @@ const WalletPage = () => {
       }
     }
   };
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user?.email) {
-        fetchProfile(user.email);
-      } else {
-        setLoading(false);
-        setError("User not authenticated");
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   if (loading) return <div className="p-4">Loading...</div>;
   if (error) return <div className="p-4 text-red-500">{error}</div>;

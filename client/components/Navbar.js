@@ -243,7 +243,9 @@ const Navbar = () => {
                           <Wallet className="h-4 w-4 text-gray-600" />
                           <span>Wallet</span>
                         </div>
-                        <span className="text-sm font-medium">{amt}</span>
+                        <span className="text-sm font-medium">
+                          ₹{(parseFloat(amt) || 0).toFixed(2)}
+                        </span>
                       </button>
 
                       {/* Balance tooltip */}
