@@ -6,7 +6,6 @@ import { auth } from "@/components/firebase/firebaseconfig";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import Swal from "sweetalert2";
 
 const Navbar = () => {
   const router = useRouter();
@@ -18,8 +17,32 @@ const Navbar = () => {
   const [userType, setUserType] = useState("");
   const [userName, setUserName] = useState("");
   const [profilePic, setProfilePic] = useState("");
+  const [isAvailable, setIsAvailable] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const BASE_URL = "https://ridewise-server.vercel.app";
+
+  const fetchProfile = async (email) => {
+    try {
+      const response = await axios.get(`${BASE_URL}/api/auth/profile/${email}`);
+      setIsAvailable(response.data.isAvailable);
+      setLoading(false);
+    } catch (error) {
+      console.log('failed to read isavailablity')
+    }
+  };
+
+  // useEffect(() => {
+  //     const unsubscribe = auth.onAuthStateChanged((user) => {
+  //       if (user?.email) {
+  //         fetchProfile(user.email);
+  //       } else {
+  //         setError("User not authenticated");
+  //       }
+  //     });
+  
+  //     return () => unsubscribe();
+  //   }, []);
 
   // Listen to auth state changes and check registration status
   useEffect(() => {
@@ -31,6 +54,7 @@ const Navbar = () => {
             `${BASE_URL}/api/auth/user/${user.email}`
           );
           setIsRegistrationComplete(response.data.exists);
+          fetchProfile(user.email);
           console.log("Checking user registration:", response.data);
           if (response.data.exists) {
             setIsLoggedIn(true);
@@ -75,9 +99,6 @@ const Navbar = () => {
   const handleProfileEdit = async () => {
     router.push("/profile");
   };
-
-  const [isAvailable, setIsAvailable] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleToggleAvailability = async () => {
     if (isUpdating) return;
