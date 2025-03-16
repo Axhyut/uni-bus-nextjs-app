@@ -6,6 +6,7 @@ import { auth } from "@/components/firebase/firebaseconfig";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { Wallet } from "lucide-react";
 
 const Navbar = () => {
   const router = useRouter();
@@ -19,6 +20,7 @@ const Navbar = () => {
   const [profilePic, setProfilePic] = useState("");
   const [isAvailable, setIsAvailable] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [amt, setAmt]= useState("");
 
   const BASE_URL = "https://ridewise-server.vercel.app";
 
@@ -26,23 +28,12 @@ const Navbar = () => {
     try {
       const response = await axios.get(`${BASE_URL}/api/auth/profile/${email}`);
       setIsAvailable(response.data.isAvailable);
+      setAmt(response.data.wallet);
       setLoading(false);
     } catch (error) {
       console.log("failed to read isavailablity");
     }
   };
-
-  // useEffect(() => {
-  //     const unsubscribe = auth.onAuthStateChanged((user) => {
-  //       if (user?.email) {
-  //         fetchProfile(user.email);
-  //       } else {
-  //         setError("User not authenticated");
-  //       }
-  //     });
-
-  //     return () => unsubscribe();
-  //   }, []);
 
   // Listen to auth state changes and check registration status
   useEffect(() => {
@@ -123,6 +114,11 @@ const Navbar = () => {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleWalletClick = () => {
+    // Add your wallet logic here
+    router.push("/wallet"); // Example navigation
   };
 
   return (
@@ -237,6 +233,22 @@ const Navbar = () => {
                           </div>
                         </button>
                       )}
+                      {/* wallet */}
+                      <button
+                        onClick={handleWalletClick}
+                        className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between text-gray-700 transition-colors"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <Wallet className="h-4 w-4 text-gray-600" />
+                          <span>Wallet</span>
+                        </div>
+                        <span className="text-sm font-medium">{amt}</span>
+                      </button>
+
+                      {/* Balance tooltip */}
+                      <div className="absolute hidden group-hover:block right-0 top-full mt-1 px-3 py-2 text-sm bg-white shadow-lg rounded-lg border">
+                        Available Balance: ₹2,500.00
+                      </div>
                       {/* Edit Profile Button */}
                       <button
                         onClick={handleProfileEdit}

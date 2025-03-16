@@ -62,6 +62,10 @@ module.exports = (sequelize) => {
       type: DataTypes.DECIMAL(3, 2),
       defaultValue: 0.00
     },
+    wallet: {
+      type: DataTypes.DECIMAL(8, 2),
+      defaultValue: 0.00
+    },
     totalRatings: {
       type: DataTypes.INTEGER,
       defaultValue: 0

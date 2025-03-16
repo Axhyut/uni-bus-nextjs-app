@@ -31,6 +31,10 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING(20),
       defaultValue: 'active'
     },
+    wallet: {
+      type: DataTypes.DECIMAL(8, 2),
+      defaultValue: 0.00
+    },
     createdAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW
