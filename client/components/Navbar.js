@@ -28,7 +28,7 @@ const Navbar = () => {
       setIsAvailable(response.data.isAvailable);
       setLoading(false);
     } catch (error) {
-      console.log('failed to read isavailablity')
+      console.log("failed to read isavailablity");
     }
   };
 
@@ -40,7 +40,7 @@ const Navbar = () => {
   //         setError("User not authenticated");
   //       }
   //     });
-  
+
   //     return () => unsubscribe();
   //   }, []);
 
@@ -208,34 +208,35 @@ const Navbar = () => {
                           {userName}
                         </div>
                       </div>
-
                       {/*toggle between availability*/}
-                      <button
-                        onClick={handleToggleAvailability}
-                        className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between text-gray-700 transition-colors"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div
-                            className={`h-4 w-4 rounded-full ${
-                              isAvailable ? "bg-green-500" : "bg-red-500"
-                            }`}
-                          />
-                          <span>Available?</span>
-                        </div>
-
-                        {/* Toggle Switch */}
-                        <div
-                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                            isAvailable ? "bg-green-200" : "bg-red-200"
-                          }`}
+                      {userType === "driver" && (
+                        <button
+                          onClick={handleToggleAvailability}
+                          className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between text-gray-700 transition-colors"
                         >
-                          <span
-                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                              isAvailable ? "translate-x-4" : "translate-x-1"
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className={`h-4 w-4 rounded-full ${
+                                isAvailable ? "bg-green-500" : "bg-red-500"
+                              }`}
+                            />
+                            <span>Available?</span>
+                          </div>
+
+                          {/* Toggle Switch */}
+                          <div
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                              isAvailable ? "bg-green-200" : "bg-red-200"
                             }`}
-                          />
-                        </div>
-                      </button>
+                          >
+                            <span
+                              className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                                isAvailable ? "translate-x-4" : "translate-x-1"
+                              }`}
+                            />
+                          </div>
+                        </button>
+                      )}
                       {/* Edit Profile Button */}
                       <button
                         onClick={handleProfileEdit}
