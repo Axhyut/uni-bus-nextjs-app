@@ -418,9 +418,10 @@ const cancelSchedule = async (req, res) => {
       });
     }
 
-    if (schedule.status !== "active") {
+    if (schedule.status !== "completed") {
+      //active was previously
       return res.status(400).json({
-        error: "Only active schedules can be cancelled",
+        error: "Only active and busy schedules can be cancelled",
       });
     }
 

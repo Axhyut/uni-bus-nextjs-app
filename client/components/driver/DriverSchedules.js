@@ -1,47 +1,64 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Clock, MapPin, AlertCircle, ChevronRight, X, Loader2, CheckCircle, Filter } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
-import StatusProgressBar from './StatusProgressBar';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  AlertCircle,
+  ChevronRight,
+  X,
+  Loader2,
+  CheckCircle,
+  Filter,
+} from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+import StatusProgressBar from "./StatusProgressBar";
 
 const DriverSchedules = ({ driverId }) => {
   const [schedules, setSchedules] = useState([]);
   const [filteredSchedules, setFilteredSchedules] = useState([]);
-  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAllSchedules, setShowAllSchedules] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [selectedScheduleId, setSelectedScheduleId] = useState(null);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [otpError, setOtpError] = useState('');
+  const [otp, setOtp] = useState("");
+  const [otpError, setOtpError] = useState("");
   const [currentPnrDetails, setCurrentPnrDetails] = useState(null);
   const [otpVerificationLoading, setOtpVerificationLoading] = useState(false);
 
   const scheduleRef = useRef(null);
 
-  const BASE_URL = 'https://ridewise-server.vercel.app';
+  const BASE_URL = "https://ridewise-server.vercel.app";
 
   const statusOptions = [
-    { value: 'all', label: 'All Schedules' },
-    { value: 'active', label: 'Active' },
-    { value: 'busy', label: 'Busy' },
-    { value: 'completed', label: 'Completed' },
-    { value: 'cancelled', label: 'Cancelled' }
+    { value: "all", label: "All Schedules" },
+    { value: "active", label: "Active" },
+    { value: "busy", label: "Busy" },
+    { value: "completed", label: "Completed" },
+    { value: "cancelled", label: "Cancelled" },
   ];
 
   const filterSchedules = (status) => {
     setSelectedStatus(status);
-    if (status === 'all') {
+    if (status === "all") {
       setFilteredSchedules(schedules);
     } else {
-      setFilteredSchedules(schedules.filter(schedule => 
-        schedule.status.toLowerCase() === status.toLowerCase()
-      ));
+      setFilteredSchedules(
+        schedules.filter(
+          (schedule) => schedule.status.toLowerCase() === status.toLowerCase()
+        )
+      );
     }
   };
   const fetchSchedules = async () => {
@@ -53,60 +70,72 @@ const DriverSchedules = ({ driverId }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`https://ridewise-server.vercel.app/api/schedules/driver/${driverId}`);
+      const response = await axios.get(
+        `https://ridewise-server.vercel.app/api/schedules/driver/${driverId}`
+      );
       setSchedules(response.data);
       setFilteredSchedules(response.data);
     } catch (err) {
-      console.error('Error fetching schedules:', err);
-      setError(err.response?.data?.error || 'Failed to fetch schedules. Please try again.');
+      console.error("Error fetching schedules:", err);
+      setError(
+        err.response?.data?.error ||
+          "Failed to fetch schedules. Please try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const fetchPnrDetails = async (scheduleId) => {
-    console.log('Fetching PNR details:', scheduleId);
+    console.log("Fetching PNR details:", scheduleId);
     try {
-      const response = await axios.get(`https://ridewise-server.vercel.app/api/pnr/schedule/${scheduleId}`);
+      const response = await axios.get(
+        `https://ridewise-server.vercel.app/api/pnr/schedule/${scheduleId}`
+      );
       setCurrentPnrDetails(response.data.booking);
     } catch (err) {
-      console.error('Error fetching PNR details:', err);
+      console.error("Error fetching PNR details:", err);
     }
   };
 
   const handleCompleteRide = async (scheduleId) => {
-    console.log('Completing ride:', scheduleId);
+    console.log("Completing ride:", scheduleId);
     try {
       await fetchPnrDetails(scheduleId);
-      const response = await axios.post(`https://ridewise-server.vercel.app/api/schedules/${scheduleId}/send-otp`);
-      console.log('OTP sent:', response.data);
+      const response = await axios.post(
+        `https://ridewise-server.vercel.app/api/schedules/${scheduleId}/send-otp`
+      );
+      console.log("OTP sent:", response.data);
       if (response.data.success) {
         setSelectedScheduleId(scheduleId);
         setIsOtpModalOpen(true);
-        setOtp('');
-        setOtpError('');
+        setOtp("");
+        setOtpError("");
       }
     } catch (err) {
-      console.error('Error sending OTP:', err);
-      setError('Failed to send OTP. Please try again.');
+      console.error("Error sending OTP:", err);
+      setError("Failed to send OTP. Please try again.");
     }
   };
 
   const handleVerifyOtp = async () => {
     try {
       setOtpVerificationLoading(true);
-      setOtpError('');
+      setOtpError("");
 
-      const response = await axios.post(`https://ridewise-server.vercel.app/api/schedules/${selectedScheduleId}/verify-otp`, {
-        otp,
-        pnrId: currentPnrDetails.pnr
-      });
+      const response = await axios.post(
+        `https://ridewise-server.vercel.app/api/schedules/${selectedScheduleId}/verify-otp`,
+        {
+          otp,
+          pnrId: currentPnrDetails.pnr,
+        }
+      );
 
       if (response.data.success) {
-        setSchedules(prevSchedules =>
-          prevSchedules.map(schedule =>
+        setSchedules((prevSchedules) =>
+          prevSchedules.map((schedule) =>
             schedule.id === selectedScheduleId
-              ? { ...schedule, status: 'completed' }
+              ? { ...schedule, status: "completed" }
               : schedule
           )
         );
@@ -114,7 +143,9 @@ const DriverSchedules = ({ driverId }) => {
         setSelectedScheduleId(null);
       }
     } catch (err) {
-      setOtpError(err.response?.data?.message || 'Invalid OTP. Please try again.');
+      setOtpError(
+        err.response?.data?.message || "Invalid OTP. Please try again."
+      );
     } finally {
       setOtpVerificationLoading(false);
     }
@@ -127,45 +158,50 @@ const DriverSchedules = ({ driverId }) => {
 
   const handleCancelSchedule = async () => {
     try {
-      setSchedules(prevSchedules =>
-        prevSchedules.map(schedule =>
+      setSchedules((prevSchedules) =>
+        prevSchedules.map((schedule) =>
           schedule.id === selectedScheduleId
-            ? { ...schedule, status: 'cancelled' }
+            ? { ...schedule, status: "cancelled" }
             : schedule
         )
       );
 
-      await axios.put(`https://ridewise-server.vercel.app/api/schedules/${selectedScheduleId}/cancel`);
+      await axios.put(
+        `https://ridewise-server.vercel.app/api/schedules/${selectedScheduleId}/cancel`
+      );
       setIsCancelModalOpen(false);
       setSelectedScheduleId(null);
     } catch (err) {
-      console.error('Error cancelling schedule:', err);
+      console.error("Error cancelling schedule:", err);
       fetchSchedules();
-      setError(err.response?.data?.error || 'Failed to cancel schedule. Please try again.');
+      setError(
+        err.response?.data?.error ||
+          "Failed to cancel schedule. Please try again."
+      );
     }
   };
 
   const getStatusConfig = (status) => {
     const configs = {
       active: {
-        bg: 'bg-emerald-50',
-        text: 'text-emerald-700',
-        border: 'border-emerald-200',
+        bg: "bg-emerald-50",
+        text: "text-emerald-700",
+        border: "border-emerald-200",
       },
       completed: {
-        bg: 'bg-blue-50',
-        text: 'text-blue-700',
-        border: 'border-blue-200',
+        bg: "bg-blue-50",
+        text: "text-blue-700",
+        border: "border-blue-200",
       },
       cancelled: {
-        bg: 'bg-red-50',
-        text: 'text-red-700',
-        border: 'border-red-200',
+        bg: "bg-red-50",
+        text: "text-red-700",
+        border: "border-red-200",
       },
       default: {
-        bg: 'bg-gray-50',
-        text: 'text-gray-700',
-        border: 'border-gray-200',
+        bg: "bg-gray-50",
+        text: "text-gray-700",
+        border: "border-gray-200",
       },
     };
     return configs[status.toLowerCase()] || configs.default;
@@ -177,22 +213,25 @@ const DriverSchedules = ({ driverId }) => {
     }
   }, [showAllSchedules, driverId]);
 
-
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (scheduleRef.current && !scheduleRef.current.contains(event.target) && !isCancelModalOpen) {
+      if (
+        scheduleRef.current &&
+        !scheduleRef.current.contains(event.target) &&
+        !isCancelModalOpen
+      ) {
         setShowAllSchedules(false);
       }
     };
 
     // Attach event listener to document
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
 
     // Cleanup listener on component unmount
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  },  [isCancelModalOpen]);
+  }, [isCancelModalOpen]);
 
   if (!driverId) return null;
 
@@ -220,12 +259,15 @@ const DriverSchedules = ({ driverId }) => {
               </h3>
               <p className="text-sm text-gray-500">ID: #{schedule.id}</p>
             </div>
-            <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}>
-              {schedule.status.charAt(0).toUpperCase() + schedule.status.slice(1)}
+            <span
+              className={`px-4 py-1.5 rounded-full text-sm font-medium ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}
+            >
+              {schedule.status.charAt(0).toUpperCase() +
+                schedule.status.slice(1)}
             </span>
           </div>
 
-          {schedule.status === 'busy' && currentPnrDetails && (
+          {schedule.status === "busy" && currentPnrDetails && (
             <div className="bg-blue-50 rounded-lg p-3 mt-2">
               <p className="text-sm font-medium text-blue-700">
                 PNR: {currentPnrDetails.pnr}
@@ -241,11 +283,11 @@ const DriverSchedules = ({ driverId }) => {
             <div className="flex items-center gap-2 text-gray-700">
               <Calendar className="h-5 w-5" />
               <span className="font-medium">
-                {new Date(schedule.date).toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
+                {new Date(schedule.date).toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </span>
             </div>
@@ -265,14 +307,18 @@ const DriverSchedules = ({ driverId }) => {
                 <div>
                   <div className="absolute left-2.5 -translate-x-1/2 w-3 h-3 rounded-full bg-green-500"></div>
                   <div className="bg-green-50 rounded-lg p-3">
-                    <p className="text-sm font-medium text-green-700">Pickup Location</p>
+                    <p className="text-sm font-medium text-green-700">
+                      Pickup Location
+                    </p>
                     <p className="text-gray-700">{schedule.pickupLocation}</p>
                   </div>
                 </div>
                 <div>
                   <div className="absolute left-2.5 -translate-x-1/2 w-3 h-3 rounded-full bg-red-500"></div>
                   <div className="bg-red-50 rounded-lg p-3">
-                    <p className="text-sm font-medium text-red-700">Dropoff Location</p>
+                    <p className="text-sm font-medium text-red-700">
+                      Dropoff Location
+                    </p>
                     <p className="text-gray-700">{schedule.dropoffLocation}</p>
                   </div>
                 </div>
@@ -283,19 +329,31 @@ const DriverSchedules = ({ driverId }) => {
           {/* Cancel Button */}
           {/* Action Buttons */}
           <div className="flex gap-3">
-            {schedule.status === 'busy' && (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleCompleteRide(schedule.id)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300 font-medium flex items-center gap-2"
-              >
-                <CheckCircle className="h-4 w-4" />
-                Complete Ride
-              </motion.button>
+            {schedule.status === "busy" && (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleCompleteRide(schedule.id)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300 font-medium flex items-center gap-2"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  Complete Ride
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => confirmCancelSchedule(schedule.id)}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 font-medium flex items-center gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Cancel Ride
+                </motion.button>
+              </>
             )}
-            
-            {schedule.status === 'active' && (
+
+            {schedule.status === "active" && (
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -329,10 +387,10 @@ const DriverSchedules = ({ driverId }) => {
         {showAllSchedules && (
           <motion.div
             ref={scheduleRef}
-            initial={{ x: '100%' }}
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed inset-y-0 right-0 w-full md:w-2/3 lg:max-w-3xl bg-slate-200 border-[1px] border-black shadow-2xl z-50"
           >
             <div className="h-full flex flex-col">
@@ -355,7 +413,9 @@ const DriverSchedules = ({ driverId }) => {
               <div className="bg-white border-b border-gray-200 p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Filter className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm font-medium text-gray-700">Filter by Status</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    Filter by Status
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {statusOptions.map((option) => (
@@ -364,8 +424,8 @@ const DriverSchedules = ({ driverId }) => {
                       onClick={() => filterSchedules(option.value)}
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                         selectedStatus === option.value
-                          ? 'bg-indigo-100 text-indigo-700 border-indigo-200'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          ? "bg-indigo-100 text-indigo-700 border-indigo-200"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                       }`}
                     >
                       {option.label}
@@ -387,10 +447,12 @@ const DriverSchedules = ({ driverId }) => {
                 ) : filteredSchedules.length === 0 ? (
                   <div className="text-center py-12">
                     <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">No Schedules Found</h3>
+                    <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                      No Schedules Found
+                    </h3>
                     <p className="text-gray-500">
-                      {selectedStatus === 'all' 
-                        ? 'Your schedule list is currently empty.'
+                      {selectedStatus === "all"
+                        ? "Your schedule list is currently empty."
                         : `No ${selectedStatus} schedules found.`}
                     </p>
                   </div>
@@ -407,8 +469,8 @@ const DriverSchedules = ({ driverId }) => {
         )}
       </AnimatePresence>
 
-       {/* OTP Verification Modal */}
-       <Dialog open={isOtpModalOpen} onOpenChange={setIsOtpModalOpen}>
+      {/* OTP Verification Modal */}
+      <Dialog open={isOtpModalOpen} onOpenChange={setIsOtpModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Enter Passenger OTP</DialogTitle>
@@ -422,9 +484,7 @@ const DriverSchedules = ({ driverId }) => {
               className="text-center text-lg tracking-wider"
               maxLength={6}
             />
-            {otpError && (
-              <p className="text-sm text-red-600">{otpError}</p>
-            )}
+            {otpError && <p className="text-sm text-red-600">{otpError}</p>}
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setIsOtpModalOpen(false)}
@@ -437,7 +497,9 @@ const DriverSchedules = ({ driverId }) => {
                 disabled={otpVerificationLoading}
                 className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
               >
-                {otpVerificationLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {otpVerificationLoading && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
                 Verify OTP
               </button>
             </div>
@@ -460,8 +522,12 @@ const DriverSchedules = ({ driverId }) => {
               exit={{ scale: 0.8 }}
               className="bg-white rounded-lg p-6 w-11/12 md:w-1/3"
             >
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">Confirm Cancel</h3>
-              <p className="text-gray-700 mb-6">Are you sure you want to cancel this schedule?</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                Confirm Cancel
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Are you sure you want to cancel this schedule?
+              </p>
               <div className="flex justify-end gap-4">
                 <button
                   onClick={() => setIsCancelModalOpen(false)}
