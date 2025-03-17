@@ -71,7 +71,7 @@ const DriverSchedules = ({ driverId }) => {
       setLoading(true);
       setError(null);
       const response = await axios.get(
-        `https://ridewise-server.vercel.app/api/schedules/driver/${driverId}`
+        `${BASE_URL}/api/schedules/driver/${driverId}`
       );
       setSchedules(response.data);
       setFilteredSchedules(response.data);
@@ -90,7 +90,7 @@ const DriverSchedules = ({ driverId }) => {
     console.log("Fetching PNR details:", scheduleId);
     try {
       const response = await axios.get(
-        `https://ridewise-server.vercel.app/api/pnr/schedule/${scheduleId}`
+        `${BASE_URL}/api/pnr/schedule/${scheduleId}`
       );
       setCurrentPnrDetails(response.data.booking);
     } catch (err) {
@@ -103,7 +103,7 @@ const DriverSchedules = ({ driverId }) => {
     try {
       await fetchPnrDetails(scheduleId);
       const response = await axios.post(
-        `https://ridewise-server.vercel.app/api/schedules/${scheduleId}/send-otp`
+        `${BASE_URL}/api/schedules/${scheduleId}/send-otp`
       );
       console.log("OTP sent:", response.data);
       if (response.data.success) {
@@ -124,7 +124,7 @@ const DriverSchedules = ({ driverId }) => {
       setOtpError("");
 
       const response = await axios.post(
-        `https://ridewise-server.vercel.app/api/schedules/${selectedScheduleId}/verify-otp`,
+        `${BASE_URL}/api/schedules/${selectedScheduleId}/verify-otp`,
         {
           otp,
           pnrId: currentPnrDetails.pnr,
@@ -167,7 +167,7 @@ const DriverSchedules = ({ driverId }) => {
       );
 
       await axios.put(
-        `https://ridewise-server.vercel.app/api/schedules/${selectedScheduleId}/cancel`
+        `${BASE_URL}/api/schedules/${selectedScheduleId}/cancel`
       );
       setIsCancelModalOpen(false);
       setSelectedScheduleId(null);
