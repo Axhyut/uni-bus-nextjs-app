@@ -420,7 +420,7 @@ const cancelSchedule = async (req, res) => {
 
     if (schedule.status !== "active") {
       return res.status(400).json({
-        error: "Only active and busy schedules can be cancelled",
+        error: "Only active schedules can be cancelled",
       });
     }
 
