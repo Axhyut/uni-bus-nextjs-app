@@ -114,61 +114,6 @@ const PaymentPage = () => {
       hour12: true,
     });
   };
-
-  // const handlePayment = async (e) => {
-  //   e.preventDefault();
-  //   setIsProcessing(true);
-  //   setError("");
-
-  //   try {
-  //     // Check wallet balance
-  //     if (walletBalance < bookingDetails.price) {
-  //       throw new Error("Insufficient funds in wallet");
-  //     }
-
-  //     // Deduct amount from wallet first
-  //     const deductionResponse = await axios.patch(
-  //       `${BASE_URL}/api/auth/profile/${bookingDetails.passengerId}`,
-  //       { wallet: walletBalance - bookingDetails.price }
-  //     );
-
-  //     if (!deductionResponse.data) {
-  //       throw new Error("Wallet deduction failed");
-  //     }
-
-  //     // Create booking
-  //     const bookingResponse = await axios.post(
-  //       `${BASE_URL}/api/booking/create`,
-  //       {
-  //         scheduleId: bookingDetails.scheduleId,
-  //         passengerId: bookingDetails.passengerId,
-  //         driverId: bookingDetails.driverId,
-  //         locationFrom: bookingDetails.locationFrom,
-  //         locationTo: bookingDetails.locationTo,
-  //         date: bookingDetails.date,
-  //         time: bookingDetails.time,
-  //         distance: bookingDetails.distance,
-  //         price: bookingDetails.price,
-  //       }
-  //     );
-
-  //     if (bookingResponse.data.success) {
-  //       router.push(`/booking/success?pnr=${bookingResponse.data.pnr}`);
-  //     } else {
-  //       // Refund wallet if booking fails
-  //       await axios.patch(
-  //         `${BASE_URL}/api/auth/profile/${bookingDetails.passengerId}`,
-  //         { wallet: walletBalance }
-  //       );
-  //       throw new Error("Booking creation failed");
-  //     }
-  //   } catch (error) {
-  //     console.error("Payment error:", error);
-  //     setError(error.response?.data?.message || error.message);
-  //   } finally {
-  //     setIsProcessing(false);
-  //   }
-  // };
   const handlePayment = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
@@ -195,7 +140,7 @@ const PaymentPage = () => {
       );
 
       if (response.data.success) {
-          router.push(`/booking/success?pnr=${response.data.pnr}`);
+        router.push(`/booking/success?pnr=${response.data.pnr}`);
       } else {
         setError("2Booking failed. Please try again.");
       }
