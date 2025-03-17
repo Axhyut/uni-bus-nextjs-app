@@ -418,12 +418,12 @@ const cancelSchedule = async (req, res) => {
       });
     }
 
-    if (schedule.status !== "active" || schedule.status !== "busy") {
-      //previously only active with implementating or
-      return res.status(400).json({
-        error: "Only active and busy schedules can be cancelled",
-      });
-    }
+    // if (schedule.status !== "active" || schedule.status !== "busy") {
+    //   //previously only active with implementating or
+    //   return res.status(400).json({
+    //     error: "Only active and busy schedules can be cancelled",
+    //   });
+    // }
 
     await schedule.update({ status: "cancelled" });
 
