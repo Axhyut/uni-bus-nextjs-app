@@ -310,7 +310,7 @@ const BookingApp = () => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user?.email) {
         try {
-          const response = await axios.get(`https://ridewise-server.vercel.app/api/auth/user/${user.email}`);
+          const response = await axios.get(`${BASE_URL}/api/auth/user/${user.email}`);
           setIsRegistrationComplete(response.data.userType === 'passenger');
           setIsLoggedIn(response.data.userType === 'passenger');
           if (response.data.userType === 'passenger') {
@@ -423,7 +423,7 @@ const BookingApp = () => {
     if (pickupLocation && dropoffLocation && selectedDate && selectedTime) {
       try {
         setIsLoading(true);
-        const response = await axios.post('https://ridewise-server.vercel.app/api/booking/check-availability', {
+        const response = await axios.post(`${BASE_URL}/api/booking/check-availability`, {
           pickupLocation,
           dropoffLocation,
           date: selectedDate,

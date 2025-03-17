@@ -16,6 +16,8 @@ const AdminPanel = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const BASE_URL='https://ridewise-server.vercel.app';
+
   useEffect(() => {
     const storedAdmin = localStorage.getItem('admin');
     if (storedAdmin) {
@@ -36,7 +38,7 @@ const AdminPanel = () => {
     setError('');
 
     try {
-      const response = await axios.post('https://ridewise-server.vercel.app/api/auth/admin/login', formData);
+      const response = await axios.post(`${BASE_URL}/api/auth/admin/login`, formData);
       if (response.data.success) {
         setIsLoggedIn(true);
         setAdminName(response.data.admin.admin_name);

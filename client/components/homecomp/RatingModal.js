@@ -48,7 +48,7 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
 
       console.log('Rating Payload:', payload);
 
-      const response = await axios.post('https://ridewise-server.vercel.app/api/booking/rate', payload);
+      const response = await axios.post(`${BASE_URL}/api/booking/rate`, payload);
 
       if (response.data.success) {
         onSubmit();

@@ -125,7 +125,7 @@ const PaymentPage = () => {
 
       // Create booking with PNR
       const response = await axios.post(
-        "https://ridewise-server.vercel.app/api/booking/create",
+        `${BASE_URL}/api/booking/create`,
         {
           scheduleId: bookingDetails.scheduleId,
           passengerId: bookingDetails.passengerId,

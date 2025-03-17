@@ -92,7 +92,7 @@ const AuthFlow = () => {
       );
 
       const response = await axios.get(
-        `https://ridewise-server.vercel.app/api/auth/user/${authData.email}`
+        `${BASE_URL}/api/auth/user/${authData.email}`
       );
 
       if (response.data.exists) {
@@ -174,7 +174,7 @@ const AuthFlow = () => {
       const user = result.user;
 
       const response = await axios.get(
-        `https://ridewise-server.vercel.app/api/auth/user/${user.email}`
+        `${BASE_URL}/api/auth/user/${user.email}`
       );
 
       if (response.data.exists) {
@@ -233,7 +233,7 @@ const AuthFlow = () => {
 
     try {
       const response = await axios.post(
-        "https://ridewise-server.vercel.app/api/auth/signup",
+        `${BASE_URL}/api/auth/signup`,
         {
           ...formData,
           userType,

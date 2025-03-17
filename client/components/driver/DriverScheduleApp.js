@@ -86,7 +86,7 @@ const DriverScheduleApp = () => {
       if (user?.email) {
         try {
           const response = await axios.get(
-            `https://ridewise-server.vercel.app/api/auth/user/${user.email}`
+            `${BASE_URL}/api/auth/user/${user.email}`
           );
           const userData = response.data;
 
@@ -345,7 +345,7 @@ const DriverScheduleApp = () => {
         };
 
         const response = await axios.post(
-          "https://ridewise-server.vercel.app/api/schedules",
+          `${BASE_URL}/api/schedules`,
           scheduleData
         );
 
