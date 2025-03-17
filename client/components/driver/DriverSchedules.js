@@ -71,7 +71,7 @@ const DriverSchedules = ({ driverId }) => {
       setLoading(true);
       setError(null);
       const response = await axios.get(
-        `${BASE_URL}/api/schedules/driver/${driverId}`
+        `https://ridewise-server.vercel.app/api/schedules/driver/${driverId}`
       );
       setSchedules(response.data);
       setFilteredSchedules(response.data);
@@ -90,7 +90,7 @@ const DriverSchedules = ({ driverId }) => {
     console.log("Fetching PNR details:", scheduleId);
     try {
       const response = await axios.get(
-        `${BASE_URL}/api/pnr/schedule/${scheduleId}`
+        `https://ridewise-server.vercel.app/api/pnr/schedule/${scheduleId}`
       );
       setCurrentPnrDetails(response.data.booking);
     } catch (err) {
@@ -103,7 +103,7 @@ const DriverSchedules = ({ driverId }) => {
     try {
       await fetchPnrDetails(scheduleId);
       const response = await axios.post(
-        `${BASE_URL}/api/schedules/${scheduleId}/send-otp`
+        `https://ridewise-server.vercel.app/api/schedules/${scheduleId}/send-otp`
       );
       console.log("OTP sent:", response.data);
       if (response.data.success) {
@@ -124,7 +124,7 @@ const DriverSchedules = ({ driverId }) => {
       setOtpError("");
 
       const response = await axios.post(
-        `${BASE_URL}/api/schedules/${selectedScheduleId}/verify-otp`,
+        `https://ridewise-server.vercel.app/api/schedules/${selectedScheduleId}/verify-otp`,
         {
           otp,
           pnrId: currentPnrDetails.pnr,
@@ -167,7 +167,7 @@ const DriverSchedules = ({ driverId }) => {
       );
 
       await axios.put(
-        `${BASE_URL}/api/schedules/${selectedScheduleId}/cancel`
+        `https://ridewise-server.vercel.app/api/schedules/${selectedScheduleId}/cancel`
       );
       setIsCancelModalOpen(false);
       setSelectedScheduleId(null);
@@ -339,16 +339,6 @@ const DriverSchedules = ({ driverId }) => {
                 >
                   <CheckCircle className="h-4 w-4" />
                   Complete Ride
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => confirmCancelSchedule(schedule.id)}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 font-medium flex items-center gap-2"
-                >
-                  <X className="h-4 w-4" />
-                  Cancel Ride
                 </motion.button>
               </>
             )}
