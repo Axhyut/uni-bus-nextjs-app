@@ -24,7 +24,7 @@ const PaymentPage = () => {
   const [expiryDate, setExpiryDate] = useState("12/25");
   const [cvv, setCvv] = useState("123");
   const [isLoading, setIsLoading] = useState(true);
-  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletBalance, setWalletBalance] = useState(0.00);
 
   const bookingDetails = {
     scheduleId: searchParams.get("scheduleId"),
@@ -175,9 +175,14 @@ const PaymentPage = () => {
                   Payment Details
                 </CardTitle>
                 <div className="text-sm text-gray-500">
+                  {/* Current Wallet Balance Display */}
                   <div className="flex items-center gap-2 mt-2">
                     <Wallet className="h-4 w-4 text-green-600" />
-                    Current Wallet Balance: ₹{walletBalance.toFixed(2)}
+                    Current Wallet Balance: ₹
+                    {(walletBalance || 0).toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </div>
                   {walletBalance < bookingDetails.price && (
                     <div className="text-red-600 mt-2">

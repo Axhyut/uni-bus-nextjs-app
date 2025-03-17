@@ -104,6 +104,7 @@ const WalletPage = () => {
     e.preventDefault();
     setError("");
 
+    // Validate input
     if (!amount || isNaN(amount) || amount <= 0) {
       setError("Please enter a valid amount");
       return;
@@ -121,7 +122,22 @@ const WalletPage = () => {
     if (result.isConfirmed) {
       try {
         const currentWallet = parseFloat(profileData.wallet) || 0;
-        const updatedWallet = currentWallet - parseFloat(amount);
+        const withdrawalAmount = parseFloat(amount);
+
+        // Check for sufficient funds
+        if (withdrawalAmount > currentWallet) {
+          await Swal.fire({
+            title: "Insufficient Funds!",
+            text: `You only have ₹${currentWallet.toFixed(
+              2
+            )} available for withdrawal`,
+            icon: "error",
+          });
+          return;
+        }
+
+        // Proceed with withdrawal
+        const updatedWallet = currentWallet - withdrawalAmount;
 
         const updatedProfile = {
           ...profileData,
@@ -137,7 +153,7 @@ const WalletPage = () => {
         setAmount("");
         Swal.fire({
           title: "Success!",
-          text: `₹${amount} withdrawn from your wallet`,
+          text: `₹${withdrawalAmount.toFixed(2)} withdrawn from your wallet`,
           icon: "success",
           timer: 2000,
           showConfirmButton: false,
