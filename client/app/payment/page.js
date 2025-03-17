@@ -1,107 +1,209 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import axios from 'axios';
-import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import { CreditCard, CheckCircle, Car, MapPin, Calendar, Clock, AlertCircle } from 'lucide-react';
+"use client";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import {
+  CreditCard,
+  CheckCircle,
+  Car,
+  MapPin,
+  Calendar,
+  Clock,
+  AlertCircle,
+  Wallet,
+} from "lucide-react";
+import { auth } from "@/components/firebase/firebaseconfig";
 
 const PaymentPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState('');
-  const [cardNumber, setCardNumber] = useState('4242 4242 4242 4242');
-  const [expiryDate, setExpiryDate] = useState('12/25');
-  const [cvv, setCvv] = useState('123');
+  const [error, setError] = useState("");
+  const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
+  const [expiryDate, setExpiryDate] = useState("12/25");
+  const [cvv, setCvv] = useState("123");
   const [isLoading, setIsLoading] = useState(true);
+  const [walletBalance, setWalletBalance] = useState(0);
 
   const bookingDetails = {
-    scheduleId: searchParams.get('scheduleId'),
-    passengerId: searchParams.get('passengerId'),
-    driverId: searchParams.get('driverId'),
-    locationFrom: decodeURIComponent(searchParams.get('pickupLocation')),
-    locationTo: decodeURIComponent(searchParams.get('dropoffLocation')),
-    date: searchParams.get('date'),
-    time: searchParams.get('time'),
-    distance: searchParams.get('distance'),
-    price: searchParams.get('price'),
-    vehicleNumber: searchParams.get('vehicleNumber'),
-    driverName: searchParams.get('driverName')
+    scheduleId: searchParams.get("scheduleId"),
+    passengerId: searchParams.get("passengerId"),
+    driverId: searchParams.get("driverId"),
+    locationFrom: decodeURIComponent(searchParams.get("pickupLocation")),
+    locationTo: decodeURIComponent(searchParams.get("dropoffLocation")),
+    date: searchParams.get("date"),
+    time: searchParams.get("time"),
+    distance: searchParams.get("distance"),
+    price: parseFloat(searchParams.get("price")),
+    vehicleNumber: searchParams.get("vehicleNumber"),
+    driverName: searchParams.get("driverName"),
   };
 
-  const BASE_URL = 'https://ridewise-server.vercel.app';
+  const BASE_URL = "https://ridewise-server.vercel.app";
 
   useEffect(() => {
-    // Validate if all required booking details are present
-    const requiredFields = [
-      'scheduleId',
-      'passengerId',
-      'driverId',
-      'locationFrom',
-      'locationTo',
-      'date',
-      'time',
-      'distance',
-      'price'
-    ];
+    const fetchWalletBalance = async (email) => {
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/api/auth/profile/${email}`
+        );
+        setWalletBalance(response.data.wallet);
+      } catch (error) {
+        setError("Failed to load wallet data");
+      }
+    };
 
-    const missingFields = requiredFields.filter(field => !bookingDetails[field]);
+    const validateBookingDetails = async () => {
+      const requiredFields = [
+        "scheduleId",
+        "passengerId", // This should contain the email
+        "driverId",
+        "locationFrom",
+        "locationTo",
+        "date",
+        "time",
+        "distance",
+        "price",
+      ];
 
-    if (missingFields.length > 0) {
-      setError('Missing required booking details');
-      router.push('/'); // Redirect to home page if details are missing
-    } else {
+      if (requiredFields.some((field) => !bookingDetails[field])) {
+        setError("Missing required booking details");
+        router.push("/");
+        return;
+      }
+
       setIsLoading(false);
-    }
+    };
+
+    let intervalId;
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user?.email) {
+        fetchWalletBalance(user.email);
+        // Set up refresh interval
+        intervalId = setInterval(() => {
+          fetchWalletBalance(user.email);
+        }, 5000);
+      } else {
+        setLoading(false);
+        setError("User not authenticated");
+        if (intervalId) clearInterval(intervalId);
+      }
+    });
+
+    validateBookingDetails();
+    return () => {
+      unsubscribe();
+      if (intervalId) clearInterval(intervalId);
+    };
   }, []);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const formatTime = (timeString) => {
-    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
+    return new Date(`2000-01-01T${timeString}`).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
     });
   };
 
+  // const handlePayment = async (e) => {
+  //   e.preventDefault();
+  //   setIsProcessing(true);
+  //   setError("");
+
+  //   try {
+  //     // Check wallet balance
+  //     if (walletBalance < bookingDetails.price) {
+  //       throw new Error("Insufficient funds in wallet");
+  //     }
+
+  //     // Deduct amount from wallet first
+  //     const deductionResponse = await axios.patch(
+  //       `${BASE_URL}/api/auth/profile/${bookingDetails.passengerId}`,
+  //       { wallet: walletBalance - bookingDetails.price }
+  //     );
+
+  //     if (!deductionResponse.data) {
+  //       throw new Error("Wallet deduction failed");
+  //     }
+
+  //     // Create booking
+  //     const bookingResponse = await axios.post(
+  //       `${BASE_URL}/api/booking/create`,
+  //       {
+  //         scheduleId: bookingDetails.scheduleId,
+  //         passengerId: bookingDetails.passengerId,
+  //         driverId: bookingDetails.driverId,
+  //         locationFrom: bookingDetails.locationFrom,
+  //         locationTo: bookingDetails.locationTo,
+  //         date: bookingDetails.date,
+  //         time: bookingDetails.time,
+  //         distance: bookingDetails.distance,
+  //         price: bookingDetails.price,
+  //       }
+  //     );
+
+  //     if (bookingResponse.data.success) {
+  //       router.push(`/booking/success?pnr=${bookingResponse.data.pnr}`);
+  //     } else {
+  //       // Refund wallet if booking fails
+  //       await axios.patch(
+  //         `${BASE_URL}/api/auth/profile/${bookingDetails.passengerId}`,
+  //         { wallet: walletBalance }
+  //       );
+  //       throw new Error("Booking creation failed");
+  //     }
+  //   } catch (error) {
+  //     console.error("Payment error:", error);
+  //     setError(error.response?.data?.message || error.message);
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // };
   const handlePayment = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
-    setError('');
+    setError("");
 
     try {
       // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Create booking with PNR
-      const response = await axios.post('https://ridewise-server.vercel.app/api/booking/create', {
-        scheduleId: bookingDetails.scheduleId,
-        passengerId: bookingDetails.passengerId,
-        driverId: bookingDetails.driverId,
-        locationFrom: bookingDetails.locationFrom,
-        locationTo: bookingDetails.locationTo,
-        date: bookingDetails.date,
-        time: bookingDetails.time,
-        distance: parseFloat(bookingDetails.distance),
-        price: parseFloat(bookingDetails.price)
-      });
+      const response = await axios.post(
+        "https://ridewise-server.vercel.app/api/booking/create",
+        {
+          scheduleId: bookingDetails.scheduleId,
+          passengerId: bookingDetails.passengerId,
+          driverId: bookingDetails.driverId,
+          locationFrom: bookingDetails.locationFrom,
+          locationTo: bookingDetails.locationTo,
+          date: bookingDetails.date,
+          time: bookingDetails.time,
+          distance: parseFloat(bookingDetails.distance),
+          price: parseFloat(bookingDetails.price),
+        }
+      );
 
       if (response.data.success) {
-        router.push(`/booking/success?pnr=${response.data.pnr}`);
+          router.push(`/booking/success?pnr=${response.data.pnr}`);
       } else {
-        setError('Booking failed. Please try again.');
+        setError("2Booking failed. Please try again.");
       }
     } catch (error) {
-      console.error('Payment error:', error);
-      setError(error.response?.data?.message || 'Payment failed. Please try again.');
+      console.error("Payment error:", error);
+      setError(
+        error.response?.data?.message || "Payment failed. Please try again."
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -127,9 +229,17 @@ const PaymentPage = () => {
                   <CreditCard className="h-6 w-6 text-orange-500" />
                   Payment Details
                 </CardTitle>
-                <p className="text-sm text-gray-500">
-                  Complete your booking by providing payment information
-                </p>
+                <div className="text-sm text-gray-500">
+                  <div className="flex items-center gap-2 mt-2">
+                    <Wallet className="h-4 w-4 text-green-600" />
+                    Current Wallet Balance: ₹{walletBalance.toFixed(2)}
+                  </div>
+                  {walletBalance < bookingDetails.price && (
+                    <div className="text-red-600 mt-2">
+                      Insufficient balance. Please add funds to your wallet.
+                    </div>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handlePayment} className="space-y-6">
@@ -191,7 +301,9 @@ const PaymentPage = () => {
 
                   <button
                     type="submit"
-                    disabled={isProcessing}
+                    disabled={
+                      isProcessing || walletBalance < bookingDetails.price
+                    }
                     className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isProcessing ? (
@@ -200,7 +312,7 @@ const PaymentPage = () => {
                         <span>Processing...</span>
                       </div>
                     ) : (
-                      `Pay ₹${bookingDetails.price}`
+                      `Pay ₹${bookingDetails.price.toFixed(2)}`
                     )}
                   </button>
                 </form>
@@ -222,8 +334,18 @@ const PaymentPage = () => {
                     Vehicle Details
                   </div>
                   <div className="space-y-1 text-sm">
-                    <p className="text-gray-600">Vehicle Number: <span className="font-medium text-gray-900">{bookingDetails.vehicleNumber}</span></p>
-                    <p className="text-gray-600">Driver: <span className="font-medium text-gray-900">{bookingDetails.driverName}</span></p>
+                    <p className="text-gray-600">
+                      Vehicle Number:{" "}
+                      <span className="font-medium text-gray-900">
+                        {bookingDetails.vehicleNumber}
+                      </span>
+                    </p>
+                    <p className="text-gray-600">
+                      Driver:{" "}
+                      <span className="font-medium text-gray-900">
+                        {bookingDetails.driverName}
+                      </span>
+                    </p>
                   </div>
                 </div>
 
@@ -235,7 +357,9 @@ const PaymentPage = () => {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Pickup Location</p>
-                      <p className="font-medium">{bookingDetails.locationFrom}</p>
+                      <p className="font-medium">
+                        {bookingDetails.locationFrom}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

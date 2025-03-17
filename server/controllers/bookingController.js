@@ -67,6 +67,27 @@ const createBooking = async (req, res) => {
         transaction
       }
     );
+    //wallet logic for driver
+    await Driver.update(
+      { wallet: sequelize.literal(`wallet + ${price}`) },
+      { 
+        where: { 
+          id: driverId
+        },
+        transaction
+      }
+    );
+
+    //wallet logic for passenger
+    await Passenger.update(
+      { wallet: sequelize.literal(`wallet - ${price}`) },
+      { 
+        where: { 
+          id: passengerId
+        },
+        transaction
+      }
+    );
 
     // Fetch driver and passenger details
     const [driver, passenger] = await Promise.all([
