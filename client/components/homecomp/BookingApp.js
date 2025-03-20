@@ -1,39 +1,34 @@
-'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import { auth } from '@/components/firebase/firebaseconfig';
-import axios from 'axios';
-import Link from 'next/link';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import {SearchField} from '../SearchField';
-import {Card, CardContent, CardHeader, CardTitle} from '../Card';
-import { DateTimeSelector } from './DateTimeSelector';
-import { VehicleList } from './VehicleList';
-import { TripDetails } from './TripDetails';
-import { Map } from '../Map';
-import  BookingStatusPanel  from './BookingStatusPanel';
-import { MapPin, Clock, Tag, CheckCircle, Calendar, Navigation } from 'lucide-react';
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import mapboxgl from "mapbox-gl";
+import { auth } from "@/components/firebase/firebaseconfig";
+import axios from "axios";
+import Link from "next/link";
+import "mapbox-gl/dist/mapbox-gl.css";
+import "@fortawesome/fontawesome-free/css/all.min.css";
+import { SearchField } from "../SearchField";
+import { DateTimeSelector } from "./DateTimeSelector";
+import { VehicleList } from "./VehicleList";
+import { TripDetails } from "./TripDetails";
+import BookingStatusPanel from "./BookingStatusPanel";
+import { MapPin, Clock, Tag, Calendar, Navigation } from "lucide-react";
 
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY;
 
 const BookingApp = () => {
-  const [pickupLocation, setPickupLocation] = useState('');
-  const [dropoffLocation, setDropoffLocation] = useState('');
-  const [pickupSearch, setPickupSearch] = useState('');
-  const [dropoffSearch, setDropoffSearch] = useState('');
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [dropoffLocation, setDropoffLocation] = useState("");
+  const [pickupSearch, setPickupSearch] = useState("");
+  const [dropoffSearch, setDropoffSearch] = useState("");
   const [pickupSuggestions, setPickupSuggestions] = useState([]);
   const [dropoffSuggestions, setDropoffSuggestions] = useState([]);
   const [isLoadingPickup, setIsLoadingPickup] = useState(false);
   const [isLoadingDropoff, setIsLoadingDropoff] = useState(false);
-  const [selectedTime, setSelectedTime] = useState('12:00');
+  const [selectedTime, setSelectedTime] = useState("12:00");
   const [showPrices, setShowPrices] = useState(false);
   const [vehicles, setVehicles] = useState([]);
-  const [selectedVehicle, setSelectedVehicle] = useState('');
-  const [map, setMap] = useState(null);
-  const [pickupMarker, setPickupMarker] = useState(null);
-  const [dropoffMarker, setDropoffMarker] = useState(null);
-  const [userLocationMarker, setUserLocationMarker] = useState(null);
-  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedVehicle, setSelectedVehicle] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isRegistrationComplete, setIsRegistrationComplete] = useState(false);
   const [showLoginMessage, setShowLoginMessage] = useState(false);
@@ -43,68 +38,130 @@ const BookingApp = () => {
   const [duration, setDuration] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [noVehiclesMessage, setNoVehiclesMessage] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [passengerId, setPassengerId] = useState('');
+  const [passengerId, setPassengerId] = useState("");
   const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [geoError, setGeoError] = useState("");
+  const [trackingLocation, setTrackingLocation] = useState(false); // Start as false until we explicitly trigger location tracking
+  const [locationInitialized, setLocationInitialized] = useState(false);
 
   const mapContainer = useRef(null);
+  const mapRef = useRef(null);
+  const pickupMarkerRef = useRef(null);
+  const dropoffMarkerRef = useRef(null);
+  const userLocationMarkerRef = useRef(null);
+  const geolocateControlRef = useRef(null);
 
-  const BASE_URL = 'https://ridewise-server.vercel.app';
+  const BASE_URL = "https://ridewise-server.vercel.app";
+
   useEffect(() => {
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_KEY;
-
-    if (mapContainer.current) {
-      initializeMap();
-    }
-  }, [mapContainer]);
-
-
+    const initializeMap = () => {
+      if (!mapContainer.current) return;
   
-  const initializeMap = () => {
-    navigator.geolocation.getCurrentPosition((position) => {
-      const { latitude, longitude } = position.coords;
-
-      // Initialize the map
-      const newMap = new mapboxgl.Map({
-        container: mapContainer.current,  // Make sure this is an HTMLElement
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: [longitude, latitude],
-        zoom: 12,
+      mapRef.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/streets-v11",
+        zoom: 14
       });
-
-      newMap.on('load', () => {
-        setMap(newMap);
+  
+      // Initialize the geolocate control
+      const geolocate = new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true,
+        },
+        trackUserLocation: true,
+        showUserLocation: true,
+        showUserHeading: true,
+        fitBoundsOptions: {
+          maxZoom: 14
+        }
       });
+      
+      // Save reference to the geolocate control
+      geolocateControlRef.current = geolocate;
+  
+      mapRef.current.addControl(geolocate, "top-right");
+      mapRef.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+      
+      // Wait for map to load before triggering geolocation
+      mapRef.current.on('load', () => {
+        setTrackingLocation(true); // Show the tracking message when we start looking for location
+        // Delay the trigger slightly to ensure map is fully loaded
+        setTimeout(() => {
+          geolocate.trigger();
+        }, 1000);
+      });
+  
+      geolocate.on("geolocate", (e) => {
+        const coords = [e.coords.longitude, e.coords.latitude];
+        setUserLocation(coords);
+        setLocationInitialized(true);
+        if (userLocationMarkerRef.current) {
+          userLocationMarkerRef.current.setLngLat(coords);
+        } else {
+          userLocationMarkerRef.current = new mapboxgl.Marker({
+            color: "#4285F4",
+            draggable: false
+          })
+            .setLngLat(coords)
+            .addTo(mapRef.current);
+        }
+      });
+  
+      geolocate.on("trackuserlocationstart", () => {
+        setTrackingLocation(true);
+      });
+  
+      geolocate.on("trackuserlocationend", () => {
+        setTrackingLocation(false);
+      });
+  
+      geolocate.on("error", (error) => {
+        setGeoError("Enable location permissions to see your current position");
+        setTrackingLocation(false);
+      });
+    };
 
-      // Add user location marker
-      const marker = new mapboxgl.Marker({ color: '#000000' })
-        .setLngLat([longitude, latitude])
-        .addTo(newMap);
-      setUserLocationMarker(marker);
-    });
+    if (mapContainer.current && !mapRef.current) initializeMap();
 
     return () => {
-      if (map) map.remove();
-      if (userLocationMarker) userLocationMarker.remove();
-      if (pickupMarker) pickupMarker.remove();
-      if (dropoffMarker) dropoffMarker.remove();
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      [pickupMarkerRef.current, dropoffMarkerRef.current, userLocationMarkerRef.current].forEach(
+        (marker) => marker?.remove()
+      );
     };
-  };
+  }, []);
+
+  // Add an effect that hides the tracking message after location is found or after timeout
+  useEffect(() => {
+    if (locationInitialized) {
+      // Once location is found, wait a moment then hide the tracking message
+      const timer = setTimeout(() => {
+        setTrackingLocation(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    } else if (trackingLocation) {
+      // If tracking for too long without success, hide the message
+      const timer = setTimeout(() => {
+        if (!locationInitialized) {
+          setTrackingLocation(false);
+        }
+      }, 10000); // 10 seconds timeout
+      return () => clearTimeout(timer);
+    }
+  }, [locationInitialized, trackingLocation]);
 
   const useDebounce = (value, delay) => {
     const [debouncedValue, setDebouncedValue] = useState(value);
-
     useEffect(() => {
-      const handler = setTimeout(() => {
-        setDebouncedValue(value);
-      }, delay);
-
-      return () => {
-        clearTimeout(handler);
-      };
+      const handler = setTimeout(() => setDebouncedValue(value), delay);
+      return () => clearTimeout(handler);
     }, [value, delay]);
-
     return debouncedValue;
   };
 
@@ -120,162 +177,128 @@ const BookingApp = () => {
   }, [debouncedDropoffSearch]);
 
   const clearRoute = () => {
-    if (map) {
-      if (map.getSource('route')) {
-        map.removeLayer('route');
-        map.removeSource('route');
-      }
-      setDistance(null);
-      setDuration(null);
+    if (mapRef.current?.getSource("route")) {
+      mapRef.current.removeLayer("route");
+      mapRef.current.removeSource("route");
     }
+    setDistance(null);
+    setDuration(null);
   };
 
   const getRoute = async (pickup, dropoff) => {
     try {
-      // Clear existing route
       clearRoute();
-
       const query = await fetch(
         `https://api.mapbox.com/directions/v5/mapbox/driving/${pickup[0]},${pickup[1]};${dropoff[0]},${dropoff[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`
       );
       const json = await query.json();
-      
-      if (json.routes && json.routes[0]) {
+
+      if (json.routes?.[0]) {
         const data = json.routes[0];
         const route = data.geometry;
-        
-        // Calculate distance and duration
         const distanceInKm = (data.distance / 1000).toFixed(2);
         const durationInMinutes = Math.round(data.duration / 60);
         setDistance(distanceInKm);
         setDuration(durationInMinutes);
 
-        // Create GeoJSON object
         const geojson = {
-          type: 'Feature',
+          type: "Feature",
           properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: route.coordinates
-          }
+          geometry: { type: "LineString", coordinates: route.coordinates }
         };
 
-        // Add the route layer
-        map.addLayer({
-          id: 'route',
-          type: 'line',
-          source: {
-            type: 'geojson',
-            data: geojson
-          },
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          paint: {
-            'line-color': '#000000',
-            'line-width': 5,
-            'line-opacity': 0.75
-          }
-        });
+        if (mapRef.current) {
+          mapRef.current.addLayer({
+            id: "route",
+            type: "line",
+            source: { type: "geojson", data: geojson },
+            layout: { "line-join": "round", "line-cap": "round" },
+            paint: {
+              "line-color": "#000000",
+              "line-width": 5,
+              "line-opacity": 0.75
+            }
+          });
 
-        // Fit map to show the entire route
-        const coordinates = route.coordinates;
-        const bounds = coordinates.reduce((bounds, coord) => {
-          return bounds.extend(coord);
-        }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
-
-        map.fitBounds(bounds, {
-          padding: 50,
-          duration: 1000
-        });
+          const bounds = route.coordinates.reduce(
+            (bounds, coord) => bounds.extend(coord),
+            new mapboxgl.LngLatBounds(route.coordinates[0], route.coordinates[0])
+          );
+          mapRef.current.fitBounds(bounds, { padding: 50, duration: 1000 });
+        }
       }
     } catch (error) {
-      console.error('Error getting route:', error);
+      console.error("Error getting route:", error);
     }
   };
 
   const handleSuggestionClick = async (suggestion, isPickup = true) => {
+    if (!suggestion?.center || suggestion.center.length < 2 || !mapRef.current) return;
+
     const [lng, lat] = suggestion.center;
-    const placeName = suggestion.place_name;
+    const placeName = suggestion.place_name || "";
 
     if (isPickup) {
       setPickupLocation(placeName);
       setPickupSearch(placeName);
       setPickupSuggestions([]);
-      if (pickupMarker) pickupMarker.remove();
-      const newMarker = new mapboxgl.Marker({ color: '#00ff00' })
+      pickupMarkerRef.current?.remove();
+      pickupMarkerRef.current = new mapboxgl.Marker({ color: "#00ff00" })
         .setLngLat([lng, lat])
-        .addTo(map);
-      setPickupMarker(newMarker);
-      
-      // Fly to the selected location
-      map.flyTo({
-        center: [lng, lat],
-        zoom: 12,
-        duration: 2000
-      });
+        .addTo(mapRef.current);
     } else {
       setDropoffLocation(placeName);
       setDropoffSearch(placeName);
       setDropoffSuggestions([]);
-      if (dropoffMarker) dropoffMarker.remove();
-      const newMarker = new mapboxgl.Marker({ color: '#ff0000' })
+      dropoffMarkerRef.current?.remove();
+      dropoffMarkerRef.current = new mapboxgl.Marker({ color: "#ff0000" })
         .setLngLat([lng, lat])
-        .addTo(map);
-      setDropoffMarker(newMarker);
-      
-      // Fly to the selected location
-      map.flyTo({
-        center: [lng, lat],
-        zoom: 12,
-        duration: 2000
-      });
+        .addTo(mapRef.current);
     }
 
-    // Draw route only if both markers are present
-    if ((isPickup && dropoffMarker) || (!isPickup && pickupMarker)) {
-      const pickup = isPickup ? [lng, lat] : pickupMarker.getLngLat().toArray();
-      const dropoff = isPickup ? dropoffMarker.getLngLat().toArray() : [lng, lat];
-      
-      if (pickup && dropoff) {
-        await getRoute(pickup, dropoff);
-      }
+    mapRef.current.flyTo({ center: [lng, lat], zoom: 14, duration: 2000 });
+
+    if ((isPickup && dropoffMarkerRef.current) || (!isPickup && pickupMarkerRef.current)) {
+      const pickup = isPickup ? [lng, lat] : pickupMarkerRef.current.getLngLat().toArray();
+      const dropoff = isPickup ? dropoffMarkerRef.current.getLngLat().toArray() : [lng, lat];
+      if (pickup && dropoff) await getRoute(pickup, dropoff);
     }
   };
 
   const clearPickupLocation = () => {
-    setPickupLocation('');
-    setPickupSearch('');
-    if (pickupMarker) {
-      pickupMarker.remove();
-      setPickupMarker(null);
-    }
+    setPickupLocation("");
+    setPickupSearch("");
+    pickupMarkerRef.current?.remove();
+    pickupMarkerRef.current = null;
     clearRoute();
     setShowPrices(false);
     setVehicles([]);
-    setSelectedVehicle('');
-    if(!dropoffMarker) 
-      {
-        initializeMap();
-      }
+    setSelectedVehicle("");
+    if (userLocation && !dropoffMarkerRef.current) {
+      mapRef.current.flyTo({ center: userLocation, zoom: 14 });
+    }
   };
 
   const clearDropoffLocation = () => {
-    setDropoffLocation('');
-    setDropoffSearch('');
-    if (dropoffMarker) {
-      dropoffMarker.remove();
-      setDropoffMarker(null);
-    }
+    setDropoffLocation("");
+    setDropoffSearch("");
+    dropoffMarkerRef.current?.remove();
+    dropoffMarkerRef.current = null;
     clearRoute();
     setShowPrices(false);
     setVehicles([]);
-    setSelectedVehicle('');
-    if(!pickupMarker) 
-      {
-        initializeMap();
-      }
+    setSelectedVehicle("");
+    if (userLocation && !pickupMarkerRef.current) {
+      mapRef.current.flyTo({ center: userLocation, zoom: 14 });
+    }
+  };
+
+  // Added a function to manually trigger geolocation
+  const triggerGeolocation = () => {
+    if (geolocateControlRef.current) {
+      setTrackingLocation(true);
+      geolocateControlRef.current.trigger();
+    }
   };
 
   const fetchSuggestions = async (query, isPickup = true) => {
@@ -286,21 +309,17 @@ const BookingApp = () => {
 
     try {
       isPickup ? setIsLoadingPickup(true) : setIsLoadingDropoff(true);
-      
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
           query
         )}.json?access_token=${mapboxgl.accessToken}&country=in&types=place,locality,neighborhood,address&limit=5`
       );
       const data = await response.json();
-      
-      if (data.features) {
-        isPickup
-          ? setPickupSuggestions(data.features)
-          : setDropoffSuggestions(data.features);
-      }
+      isPickup
+        ? setPickupSuggestions(data.features || [])
+        : setDropoffSuggestions(data.features || []);
     } catch (error) {
-      console.error('Error fetching suggestions:', error);
+      console.error("Error fetching suggestions:", error);
     } finally {
       isPickup ? setIsLoadingPickup(false) : setIsLoadingDropoff(false);
     }
@@ -310,14 +329,14 @@ const BookingApp = () => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user?.email) {
         try {
-          const response = await axios.get(`${BASE_URL}/api/auth/user/${user.email}`);
-          setIsRegistrationComplete(response.data.userType === 'passenger');
-          setIsLoggedIn(response.data.userType === 'passenger');
-          if (response.data.userType === 'passenger') {
+          const response = await axios.get(
+            `${BASE_URL}/api/auth/user/${user.email}`
+          );
+          setIsRegistrationComplete(response.data.userType === "passenger");
+          setIsLoggedIn(response.data.userType === "passenger");
+          if (response.data.userType === "passenger")
             setPassengerId(response.data.passengerId);
-          }
         } catch (error) {
-          console.error('Error checking user registration:', error);
           setIsLoggedIn(false);
           setIsRegistrationComplete(false);
         }
@@ -327,158 +346,112 @@ const BookingApp = () => {
         resetComponent();
       }
     });
-
     return () => unsubscribe();
   }, []);
 
-  const searchLocation = async (query, isPickup = true) => {
-    try {
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          query
-        )}.json?access_token=${mapboxgl.accessToken}`
-      );
-      const data = await response.json();
-
-      if (data.features && data.features.length > 0) {
-        const [lng, lat] = data.features[0].center;
-        const placeName = data.features[0].place_name;
-
-        if (isPickup) {
-          setPickupLocation(placeName);
-          if (pickupMarker) pickupMarker.remove();
-          const newMarker = new mapboxgl.Marker({ color: '#00ff00' })
-            .setLngLat([lng, lat])
-            .addTo(map);
-          setPickupMarker(newMarker);
-        } else {
-          setDropoffLocation(placeName);
-          if (dropoffMarker) dropoffMarker.remove();
-          const newMarker = new mapboxgl.Marker({ color: '#ff0000' })
-            .setLngLat([lng, lat])
-            .addTo(map);
-          setDropoffMarker(newMarker);
-        }
-
-        map.flyTo({
-          center: [lng, lat],
-          zoom: 12,
-        });
-      }
-    } catch (error) {
-      console.error('Error searching location:', error);
-    }
-  };
-
   const resetComponent = () => {
-    setPickupLocation('');
-    setDropoffLocation('');
-    setPickupSearch('');
-    setDropoffSearch('');
-    setSelectedDate('');
-    setSelectedTime('12:00');
+    setPickupLocation("");
+    setDropoffLocation("");
+    setPickupSearch("");
+    setDropoffSearch("");
+    setSelectedDate("");
+    setSelectedTime("12:00");
     setVehicles([]);
-    setSelectedVehicle('');
+    setSelectedVehicle("");
     setShowPrices(false);
     setDistance(null);
     setDuration(null);
-    if (pickupMarker) {
-      pickupMarker.remove();
-      setPickupMarker(null);
-    }
-    if (dropoffMarker) {
-      dropoffMarker.remove();
-      setDropoffMarker(null);
-    }
+    pickupMarkerRef.current?.remove();
+    pickupMarkerRef.current = null;
+    dropoffMarkerRef.current?.remove();
+    dropoffMarkerRef.current = null;
     clearRoute();
-    initializeMap();
+    if (userLocation) {
+      mapRef.current.flyTo({ center: userLocation, zoom: 14 });
+    }
   };
-
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
     setShowPrices(false);
     setVehicles([]);
-    setSelectedVehicle('')
+    setSelectedVehicle("");
   };
 
   const handleTimeChange = (event) => {
     setSelectedTime(event.target.value);
     setShowPrices(false);
     setVehicles([]);
-    setSelectedVehicle('')
+    setSelectedVehicle("");
   };
 
   const handleSeePricesClick = async () => {
     if (!isLoggedIn || !isRegistrationComplete) {
       setShowLoginMessage(true);
       setShowPrices(false);
-      setTimeout(() => {
-        setShowLoginMessage(false);
-        setAllfields(false);
-      }, 3000);
+      setTimeout(() => setShowLoginMessage(false), 3000);
       return;
     }
-  
+
     if (pickupLocation && dropoffLocation && selectedDate && selectedTime) {
       try {
         setIsLoading(true);
-        const response = await axios.post(`${BASE_URL}/api/booking/check-availability`, {
-          pickupLocation,
-          dropoffLocation,
-          date: selectedDate,
-          time: selectedTime,
-          distance: parseFloat(distance)
-        });
-  
+        const response = await axios.post(
+          `${BASE_URL}/api/booking/check-availability`,
+          {
+            pickupLocation,
+            dropoffLocation,
+            date: selectedDate,
+            time: selectedTime,
+            distance: parseFloat(distance),
+          }
+        );
+
         if (response.data.success) {
           setVehicles(response.data.vehicles);
-          console.log('Vehicles:', response.data.vehicles);
           setShowPrices(true);
-          setAllfields(true);
-          setShowLoginMessage(false);
-          setAllfmsg(false);
           setNoVehiclesMessage(false);
-          setIsPanelOpen(true); // Open the panel when vehicles are loaded
+          setIsPanelOpen(true);
         } else {
           setShowPrices(false);
           setNoVehiclesMessage(true);
-          setTimeout(() => {
-            setNoVehiclesMessage(false);
-          }, 3000);
+          setTimeout(() => setNoVehiclesMessage(false), 3000);
         }
       } catch (error) {
-        console.error('Error checking vehicle availability:', error);
         setShowPrices(false);
         setNoVehiclesMessage(true);
-        setTimeout(() => {
-          setNoVehiclesMessage(false);
-        }, 3000);
+        setTimeout(() => setNoVehiclesMessage(false), 3000);
       } finally {
         setIsLoading(false);
       }
     } else {
       setAllfmsg(true);
-      setTimeout(() => {
-        setAllfmsg(false);
-      }, 3000);
-    }
-  };
-
-  const handleBookClick = () => {
-    if (selectedVehicle) {
-      alert(`You have booked ${selectedVehicle}!`);
-      resetComponent();
+      setTimeout(() => setAllfmsg(false), 3000);
     }
   };
 
   return (
     <div className="max-w-[1500px] mx-auto mt-24 px-4">
+      {geoError && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
+          {geoError}
+          <button 
+            onClick={triggerGeolocation}
+            className="ml-2 underline"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+      {trackingLocation && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded z-50">
+          Detecting your current location...
+        </div>
+      )}
+      
       <div className="flex flex-col lg:flex-row gap-8">
-        {/* Booking Form - now 1/3 width */}
         <div className="w-full lg:w-[650px]">
           <div className="bg-white border-[1px] border-black overflow-hidden">
-            {/* Header */}
             <div className="relative bg-white border-b-2 border-gray-100 px-6 py-8">
               <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-amber-50"></div>
               <div className="relative flex items-center justify-between">
@@ -502,11 +475,9 @@ const BookingApp = () => {
                 </div>
               </div>
             </div>
-  
-            {/* Content */}
+
             <div className="p-6">
               <div className="space-y-6">
-                {/* Location Section */}
                 <div className="border-2 border-gray-100 rounded-lg p-6 hover:border-orange-200 transition-colors duration-300">
                   <h3 className="flex items-center text-lg font-semibold text-gray-800 mb-4">
                     <MapPin className="mr-2 h-5 w-5 text-orange-500" />
@@ -540,8 +511,7 @@ const BookingApp = () => {
                     />
                   </div>
                 </div>
-  
-                {/* Schedule Section */}
+
                 <div className="border-2 border-gray-100 rounded-lg p-6 hover:border-orange-200 transition-colors duration-300">
                   <h3 className="flex items-center text-lg font-semibold text-gray-800 mb-4">
                     <Calendar className="mr-2 h-5 w-5 text-orange-500" />
@@ -569,8 +539,7 @@ const BookingApp = () => {
                     </div>
                   </div>
                 </div>
-  
-                {/* Price Button */}
+
                 <button
                   onClick={handleSeePricesClick}
                   disabled={!pickupLocation || !dropoffLocation || !selectedDate || !selectedTime}
@@ -581,8 +550,7 @@ const BookingApp = () => {
                     <span>Check Available Vehicles</span>
                   </div>
                 </button>
-  
-                {/* Messages Section */}
+
                 {showLoginMessage && (
                   <div className="border-2 border-orange-200 bg-orange-50 rounded-lg p-6">
                     <div className="flex items-start space-x-3">
@@ -590,8 +558,8 @@ const BookingApp = () => {
                         <p className="text-orange-800 font-medium mb-2">
                           Please log in as a passenger to proceed
                         </p>
-                        <Link 
-                          href="/auth" 
+                        <Link
+                          href="/auth"
                           className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium"
                         >
                           Sign in to your account <span className="ml-2">→</span>
@@ -600,40 +568,30 @@ const BookingApp = () => {
                     </div>
                   </div>
                 )}
-  
-                {/* Other alert messages */}
-                {allfmsg && !allfields && (
+
+                {allfmsg && (
                   <div className="border-2 border-red-200 bg-red-50 rounded-lg p-6">
-                    <p className="text-red-800 font-medium">
-                      All fields are required to proceed
+                    <p className="text-red-800 font-medium">All fields are required to proceed</p>
+                  </div>
+                )}
+
+                {noVehiclesMessage && (
+                  <div className="border-2 border-yellow-200 bg-yellow-50 rounded-lg p-6 mb-4">
+                    <p className="text-yellow-800 font-medium">
+                      No vehicles available for the selected route and time. Please try different options.
                     </p>
                   </div>
                 )}
-  
-                {noVehiclesMessage && (
-                  <div className="border-2 border-yellow-200 bg-yellow-50 rounded-lg p-6 mb-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="flex-1">
-                        <p className="text-yellow-800 font-medium">
-                          No vehicles available for the selected route and time. Please try different options.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-  
+
                 {isLoading && (
                   <div className="border-2 border-blue-200 bg-blue-50 rounded-lg p-6 mb-4">
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <p className="text-blue-800 font-medium">
-                        Checking available vehicles...
-                      </p>
+                      <p className="text-blue-800 font-medium">Checking available vehicles...</p>
                     </div>
                   </div>
                 )}
-  
-                {/* Vehicle Selection */}
+
                 {showPrices && (
                   <VehicleList
                     vehicles={vehicles}
@@ -653,27 +611,21 @@ const BookingApp = () => {
             </div>
           </div>
         </div>
-  
-        {/* Map and Trip Details Section - now 2/3 width */}
+
         <div className="w-full lg:w-[850px]">
           <div className="sticky top-8">
-            {/* Map Container */}
             <div className="border-[1px] border-black p-3 bg-white hover:border-orange-200 transition-colors duration-300">
               <div className="bg-gray-50 rounded-lg overflow-hidden">
-                <Map mapContainer={mapContainer} className="h-[600px] w-full" />
+                <div ref={mapContainer} className="h-[600px] w-full" />
               </div>
             </div>
-            {distance && duration && (
-              <div className="">
-                <TripDetails distance={distance} duration={duration} />
-              </div>
-            )}
+            {distance && duration && <TripDetails distance={distance} duration={duration} />}
           </div>
         </div>
       </div>
-      
+
       {isLoggedIn && (
-        <BookingStatusPanel 
+        <BookingStatusPanel
           isOpen={isStatusPanelOpen}
           onClose={() => setIsStatusPanelOpen(false)}
           passengerId={passengerId}
