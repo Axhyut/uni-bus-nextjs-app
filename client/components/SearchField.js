@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export const SearchField = ({ 
-  icon, 
-  placeholder, 
-  value, 
-  onChange, 
-  suggestions, 
+export const SearchField = ({
+  icon,
+  placeholder,
+  value,
+  onChange,
+  suggestions,
   onSuggestionClick,
   isLoading,
-  onClear 
+  onClear,
+  onUseCurrentLocation
 }) => {
   const wrapperRef = useRef(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -21,17 +22,16 @@ export const SearchField = ({
         setIsFocused(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <div 
+      <div
         className={`flex items-center w-full border-2 rounded-lg px-4 py-3 bg-white transition-all duration-200 ${
-          isFocused 
-            ? 'border-blue-500 shadow-md' 
+          isFocused
+            ? 'border-blue-500 shadow-md'
             : 'border-gray-200 hover:border-gray-300'
         }`}
       >
@@ -62,6 +62,16 @@ export const SearchField = ({
           {isLoading && (
             <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
           )}
+          
+          {/* Current Location Button */}
+          <button
+            onClick={onUseCurrentLocation}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+            title="Use current location"
+          >
+            <i className="fas fa-crosshairs text-gray-600 hover:text-blue-500"></i>
+          </button>
+          
           {value && (
             <button
               onClick={() => {

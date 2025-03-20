@@ -59,13 +59,13 @@ const BookingApp = () => {
   useEffect(() => {
     const initializeMap = () => {
       if (!mapContainer.current) return;
-  
+
       mapRef.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/streets-v11",
-        zoom: 14
+        zoom: 14,
       });
-  
+
       // Initialize the geolocate control
       const geolocate = new mapboxgl.GeolocateControl({
         positionOptions: {
@@ -75,25 +75,25 @@ const BookingApp = () => {
         showUserLocation: true,
         showUserHeading: true,
         fitBoundsOptions: {
-          maxZoom: 14
-        }
+          maxZoom: 14,
+        },
       });
-      
+
       // Save reference to the geolocate control
       geolocateControlRef.current = geolocate;
-  
+
       mapRef.current.addControl(geolocate, "top-right");
       mapRef.current.addControl(new mapboxgl.NavigationControl(), "top-right");
-      
+
       // Wait for map to load before triggering geolocation
-      mapRef.current.on('load', () => {
+      mapRef.current.on("load", () => {
         setTrackingLocation(true); // Show the tracking message when we start looking for location
         // Delay the trigger slightly to ensure map is fully loaded
         setTimeout(() => {
           geolocate.trigger();
         }, 1000);
       });
-  
+
       geolocate.on("geolocate", (e) => {
         const coords = [e.coords.longitude, e.coords.latitude];
         setUserLocation(coords);
@@ -103,21 +103,21 @@ const BookingApp = () => {
         } else {
           userLocationMarkerRef.current = new mapboxgl.Marker({
             color: "#4285F4",
-            draggable: false
+            draggable: false,
           })
             .setLngLat(coords)
             .addTo(mapRef.current);
         }
       });
-  
+
       geolocate.on("trackuserlocationstart", () => {
         setTrackingLocation(true);
       });
-  
+
       geolocate.on("trackuserlocationend", () => {
         setTrackingLocation(false);
       });
-  
+
       geolocate.on("error", (error) => {
         setGeoError("Enable location permissions to see your current position");
         setTrackingLocation(false);
@@ -131,9 +131,11 @@ const BookingApp = () => {
         mapRef.current.remove();
         mapRef.current = null;
       }
-      [pickupMarkerRef.current, dropoffMarkerRef.current, userLocationMarkerRef.current].forEach(
-        (marker) => marker?.remove()
-      );
+      [
+        pickupMarkerRef.current,
+        dropoffMarkerRef.current,
+        userLocationMarkerRef.current,
+      ].forEach((marker) => marker?.remove());
     };
   }, []);
 
@@ -204,7 +206,7 @@ const BookingApp = () => {
         const geojson = {
           type: "Feature",
           properties: {},
-          geometry: { type: "LineString", coordinates: route.coordinates }
+          geometry: { type: "LineString", coordinates: route.coordinates },
         };
 
         if (mapRef.current) {
@@ -216,13 +218,16 @@ const BookingApp = () => {
             paint: {
               "line-color": "#000000",
               "line-width": 5,
-              "line-opacity": 0.75
-            }
+              "line-opacity": 0.75,
+            },
           });
 
           const bounds = route.coordinates.reduce(
             (bounds, coord) => bounds.extend(coord),
-            new mapboxgl.LngLatBounds(route.coordinates[0], route.coordinates[0])
+            new mapboxgl.LngLatBounds(
+              route.coordinates[0],
+              route.coordinates[0]
+            )
           );
           mapRef.current.fitBounds(bounds, { padding: 50, duration: 1000 });
         }
@@ -232,8 +237,50 @@ const BookingApp = () => {
     }
   };
 
+  // Add this function to your BookingApp component
+  const handleUseCurrentLocationForPickup = async () => {
+    if (userLocation) {
+      setIsLoadingPickup(true);
+      try {
+        // Reverse geocode the user's location
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${userLocation[0]},${userLocation[1]}.json?access_token=${mapboxgl.accessToken}`
+        );
+        const data = await response.json();
+
+        if (data.features && data.features.length > 0) {
+          const placeName = data.features[0].place_name;
+          setPickupLocation(placeName);
+          setPickupSearch(placeName);
+
+          // Set the pickup marker
+          pickupMarkerRef.current?.remove();
+          pickupMarkerRef.current = new mapboxgl.Marker({ color: "#00ff00" })
+            .setLngLat(userLocation)
+            .addTo(mapRef.current);
+
+          // If dropoff is set, calculate route
+          if (dropoffMarkerRef.current) {
+            const dropoff = dropoffMarkerRef.current.getLngLat().toArray();
+            await getRoute(userLocation, dropoff);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching location name:", error);
+      } finally {
+        setIsLoadingPickup(false);
+      }
+    } else {
+      // If user location is not available, trigger geolocation first
+      setTrackingLocation(true);
+      triggerGeolocation();
+      // You might want to add logic to retry getting the location after a delay
+    }
+  };
+
   const handleSuggestionClick = async (suggestion, isPickup = true) => {
-    if (!suggestion?.center || suggestion.center.length < 2 || !mapRef.current) return;
+    if (!suggestion?.center || suggestion.center.length < 2 || !mapRef.current)
+      return;
 
     const [lng, lat] = suggestion.center;
     const placeName = suggestion.place_name || "";
@@ -258,9 +305,16 @@ const BookingApp = () => {
 
     mapRef.current.flyTo({ center: [lng, lat], zoom: 14, duration: 2000 });
 
-    if ((isPickup && dropoffMarkerRef.current) || (!isPickup && pickupMarkerRef.current)) {
-      const pickup = isPickup ? [lng, lat] : pickupMarkerRef.current.getLngLat().toArray();
-      const dropoff = isPickup ? dropoffMarkerRef.current.getLngLat().toArray() : [lng, lat];
+    if (
+      (isPickup && dropoffMarkerRef.current) ||
+      (!isPickup && pickupMarkerRef.current)
+    ) {
+      const pickup = isPickup
+        ? [lng, lat]
+        : pickupMarkerRef.current.getLngLat().toArray();
+      const dropoff = isPickup
+        ? dropoffMarkerRef.current.getLngLat().toArray()
+        : [lng, lat];
       if (pickup && dropoff) await getRoute(pickup, dropoff);
     }
   };
@@ -312,7 +366,9 @@ const BookingApp = () => {
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
           query
-        )}.json?access_token=${mapboxgl.accessToken}&country=in&types=place,locality,neighborhood,address&limit=5`
+        )}.json?access_token=${
+          mapboxgl.accessToken
+        }&country=in&types=place,locality,neighborhood,address&limit=5`
       );
       const data = await response.json();
       isPickup
@@ -435,10 +491,7 @@ const BookingApp = () => {
       {geoError && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50">
           {geoError}
-          <button 
-            onClick={triggerGeolocation}
-            className="ml-2 underline"
-          >
+          <button onClick={triggerGeolocation} className="ml-2 underline">
             Try again
           </button>
         </div>
@@ -448,7 +501,7 @@ const BookingApp = () => {
           Detecting your current location...
         </div>
       )}
-      
+
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="w-full lg:w-[650px]">
           <div className="bg-white border-[1px] border-black overflow-hidden">
@@ -456,8 +509,12 @@ const BookingApp = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-amber-50"></div>
               <div className="relative flex items-center justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">Book Your Journey</h2>
-                  <p className="text-gray-600 mt-1">Find the perfect ride for your trip</p>
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    Book Your Journey
+                  </h2>
+                  <p className="text-gray-600 mt-1">
+                    Find the perfect ride for your trip
+                  </p>
                 </div>
                 <div className="flex items-center gap-4">
                   {isLoggedIn && (
@@ -490,9 +547,12 @@ const BookingApp = () => {
                       value={pickupSearch}
                       onChange={setPickupSearch}
                       suggestions={pickupSuggestions}
-                      onSuggestionClick={(suggestion) => handleSuggestionClick(suggestion, true)}
+                      onSuggestionClick={(suggestion) =>
+                        handleSuggestionClick(suggestion, true)
+                      }
                       isLoading={isLoadingPickup}
                       onClear={clearPickupLocation}
+                      onUseCurrentLocation={handleUseCurrentLocationForPickup}
                       className="bg-gray-50 focus:bg-white transition-colors duration-300"
                     />
                     <div className="relative">
@@ -504,7 +564,9 @@ const BookingApp = () => {
                       value={dropoffSearch}
                       onChange={setDropoffSearch}
                       suggestions={dropoffSuggestions}
-                      onSuggestionClick={(suggestion) => handleSuggestionClick(suggestion, false)}
+                      onSuggestionClick={(suggestion) =>
+                        handleSuggestionClick(suggestion, false)
+                      }
                       isLoading={isLoadingDropoff}
                       onClear={clearDropoffLocation}
                       className="bg-gray-50 focus:bg-white transition-colors duration-300"
@@ -519,7 +581,9 @@ const BookingApp = () => {
                   </h3>
                   <div className="grid grid-cols-1 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Date
+                      </label>
                       <input
                         type="date"
                         value={selectedDate}
@@ -529,7 +593,9 @@ const BookingApp = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Time
+                      </label>
                       <input
                         type="time"
                         value={selectedTime}
@@ -542,7 +608,12 @@ const BookingApp = () => {
 
                 <button
                   onClick={handleSeePricesClick}
-                  disabled={!pickupLocation || !dropoffLocation || !selectedDate || !selectedTime}
+                  disabled={
+                    !pickupLocation ||
+                    !dropoffLocation ||
+                    !selectedDate ||
+                    !selectedTime
+                  }
                   className="w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white px-6 py-4 rounded-lg font-semibold shadow-lg transition-all duration-300 hover:shadow-xl hover:from-orange-600 hover:to-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center justify-center space-x-2">
@@ -562,7 +633,8 @@ const BookingApp = () => {
                           href="/auth"
                           className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium"
                         >
-                          Sign in to your account <span className="ml-2">→</span>
+                          Sign in to your account{" "}
+                          <span className="ml-2">→</span>
                         </Link>
                       </div>
                     </div>
@@ -571,14 +643,17 @@ const BookingApp = () => {
 
                 {allfmsg && (
                   <div className="border-2 border-red-200 bg-red-50 rounded-lg p-6">
-                    <p className="text-red-800 font-medium">All fields are required to proceed</p>
+                    <p className="text-red-800 font-medium">
+                      All fields are required to proceed
+                    </p>
                   </div>
                 )}
 
                 {noVehiclesMessage && (
                   <div className="border-2 border-yellow-200 bg-yellow-50 rounded-lg p-6 mb-4">
                     <p className="text-yellow-800 font-medium">
-                      No vehicles available for the selected route and time. Please try different options.
+                      No vehicles available for the selected route and time.
+                      Please try different options.
                     </p>
                   </div>
                 )}
@@ -587,7 +662,9 @@ const BookingApp = () => {
                   <div className="border-2 border-blue-200 bg-blue-50 rounded-lg p-6 mb-4">
                     <div className="flex items-center justify-center space-x-2">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <p className="text-blue-800 font-medium">Checking available vehicles...</p>
+                      <p className="text-blue-800 font-medium">
+                        Checking available vehicles...
+                      </p>
                     </div>
                   </div>
                 )}
@@ -619,7 +696,9 @@ const BookingApp = () => {
                 <div ref={mapContainer} className="h-[600px] w-full" />
               </div>
             </div>
-            {distance && duration && <TripDetails distance={distance} duration={duration} />}
+            {distance && duration && (
+              <TripDetails distance={distance} duration={duration} />
+            )}
           </div>
         </div>
       </div>
