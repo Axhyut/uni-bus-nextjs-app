@@ -168,38 +168,48 @@ const AuthFlow = () => {
 
   const handleGoogleSignIn = async () => {
     setError(null);
-
+    setLoading(true);
+  
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
-      const response = await axios.get(
-        `${BASE_URL}/api/auth/user/${user.email}`
-      );
-
-      if (response.data.exists) {
-        setRegistrationComplete(true);
-        router.push(response.data.userType === "driver" ? "/dashboard" : "/");
-      } else {
-        setFormData({
-          ...formData,
-          email: user.email,
-          firstName: user.displayName?.split(" ")[0] || "",
-          lastName: user.displayName?.split(" ")[1] || "",
-        });
-        setStep("profile");
+  
+      try {
+        const response = await axios.get(
+          `${BASE_URL}/api/auth/user/${user.email}`
+        );
+  
+        if (response.data.exists) {
+          setRegistrationComplete(true);
+          router.push(response.data.userType === "driver" ? "/dashboard" : "/");
+        } else {
+          setFormData({
+            ...formData,
+            email: user.email,
+            firstName: user.displayName?.split(" ")[0] || "",
+            lastName: user.displayName?.split(" ")[1] || "",
+          });
+          setStep("profile");
+        }
+      } catch (err) {
+        console.error("Backend check error:", err);
+        setError("Failed to verify registration status. Please try again.");
+        await handleSignOut();
       }
     } catch (error) {
-      setError("Error during Google Sign-In");
-      await handleSignOut();
+      console.error("Google Sign-In Error:", error);
+      setError(error.message || "Error during Google Sign-In");
     } finally {
       setLoading(false);
     }
   };
-
+  
+  // Updated handleSignOut to prevent unnecessary errors
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
       setStep("initial");
       setAuthData({
         email: "",
@@ -222,6 +232,7 @@ const AuthFlow = () => {
         licenseValidity: "",
       });
     } catch (error) {
+      console.error("Sign Out Error:", error);
       setError("Error signing out");
     }
   };
@@ -232,13 +243,10 @@ const AuthFlow = () => {
     setError(null);
 
     try {
-      const response = await axios.post(
-        `${BASE_URL}/api/auth/signup`,
-        {
-          ...formData,
-          userType,
-        }
-      );
+      const response = await axios.post(`${BASE_URL}/api/auth/signup`, {
+        ...formData,
+        userType,
+      });
       setRegistrationComplete(true);
       router.push(userType === "driver" ? "/dashboard" : "/");
     } catch (error) {
@@ -255,24 +263,73 @@ const AuthFlow = () => {
   };
 
   const handlePasswordReset = async () => {
-    const email = prompt("Enter your email address");
+    const { value: email } = await Swal.fire({
+      title: "Reset Password",
+      html: `
+        <input 
+          type="email" 
+          id="email" 
+          class="swal2-input" 
+          placeholder="Enter your email address"
+          autocomplete="email"
+          required
+        >
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: "Send Reset Link",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      customClass: {
+        validationMessage: "text-red-500 text-sm mt-2",
+      },
+      preConfirm: () => {
+        const email = Swal.getPopup().querySelector("#email").value;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!email) {
+          Swal.showValidationMessage("Please enter an email address");
+          return false;
+        }
+        if (!emailRegex.test(email)) {
+          Swal.showValidationMessage("Please enter a valid email address");
+          return false;
+        }
+        return email;
+      },
+    });
+
     if (email) {
       try {
         await sendPasswordResetEmail(auth, email);
         await Swal.fire({
-          title: "Success",
-          text: "Your password reset instructions has been sent successfully!",
+          title: "Email Sent!",
+          html: `
+            <div class="text-center">
+              <svg class="mx-auto mb-4 w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+              <p class="text-gray-700">
+                We've sent password reset instructions to<br>
+                <span class="font-semibold">${email}</span>
+              </p>
+            </div>
+          `,
           icon: "success",
+          showConfirmButton: false,
+          timer: 3000,
         });
       } catch (error) {
         await Swal.fire({
-          title: "Failed",
-          text: "Your password reset instructions could not be sent!",
+          title: "Failed to Send",
+          text: error.message || "Could not send reset instructions",
           icon: "error",
+          confirmButtonText: "Try Again",
         });
       }
     }
   };
+
   return (
     <div>
       <TopBar />
