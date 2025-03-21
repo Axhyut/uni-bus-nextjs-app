@@ -439,6 +439,8 @@ const cancelSchedule = async (req, res) => {
   }
 };
 
+// Update the checkAvailableVehicles function
+
 const checkAvailableVehicles = async (req, res) => {
   try {
     const {
@@ -461,13 +463,28 @@ const checkAvailableVehicles = async (req, res) => {
 
     console.log("Checking available vehicles:", req.body);
 
-    // Find schedules that match the criteria
+    // Extract key location components
+    const pickupKeywords = extractLocationComponents(pickupLocation);
+    const dropoffKeywords = extractLocationComponents(dropoffLocation);
+
+    console.log("Pickup keywords:", pickupKeywords);
+    console.log("Dropoff keywords:", dropoffKeywords);
+
+    // Find schedules with more flexible location matching
     const matchingSchedules = await Schedule.findAll({
       where: {
         date: date,
         status: "active",
-        pickupLocation: pickupLocation,
-        dropoffLocation: dropoffLocation,
+        [Op.and]: [
+          sequelize.literal(`(
+            pickupLocation = '${pickupLocation}' OR 
+            ${generateKeywordConditions("pickupLocation", pickupKeywords)}
+          )`),
+          sequelize.literal(`(
+            dropoffLocation = '${dropoffLocation}' OR 
+            ${generateKeywordConditions("dropoffLocation", dropoffKeywords)}
+          )`),
+        ],
         timeFrom: {
           [Op.lte]: requestedTime,
         },
@@ -579,6 +596,29 @@ const checkAvailableVehicles = async (req, res) => {
     });
   }
 };
+
+// Helper function to extract significant location components
+function extractLocationComponents(location) {
+  // Clean the string: remove commas, make lowercase, and split by spaces
+  const cleanLocation = location.toLowerCase().replace(/,/g, "").split(/\s+/);
+
+  // Filter out postal codes and very short terms
+  return cleanLocation.filter((part) => {
+    // Keep only words, not numbers
+    return isNaN(part) && part.length > 2 && !part.match(/^[0-9-]+$/);
+  });
+}
+
+// Helper function to generate SQL conditions for keyword matching
+function generateKeywordConditions(field, keywords) {
+  if (!keywords || keywords.length === 0) {
+    return "1=1"; // Default true condition
+  }
+
+  return keywords
+    .map((keyword) => `LOWER(${field}) LIKE '%${keyword}%'`)
+    .join(" OR ");
+}
 
 // Add new endpoint to get PNR details by schedule ID
 const getPnrBySchedule = async (req, res) => {
