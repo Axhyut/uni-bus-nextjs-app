@@ -442,7 +442,6 @@ const cancelSchedule = async (req, res) => {
 const checkAvailableVehicles = async (req, res) => {
   try {
     const { pickupLocation, dropoffLocation, date, time, distance } = req.body;
-
     const requestedTime = time;
 
     // Input validation
@@ -454,6 +453,13 @@ const checkAvailableVehicles = async (req, res) => {
     }
 
     console.log("Checking available vehicles:", req.body);
+
+    // Detect the user's device from the user-agent
+    const userAgent = req.headers['user-agent'].toLowerCase();
+    const isAndroid = userAgent.indexOf('android') > -1;
+    const isIOS = userAgent.indexOf('iphone') > -1 || userAgent.indexOf('ipad') > -1 || userAgent.indexOf('ipod') > -1;
+    
+    console.log(`User device: ${isAndroid ? 'Android' : (isIOS ? 'iOS' : 'Other')}`);
 
     // Extract city and state from locations
     const pickupCityState = extractCityState(pickupLocation);
@@ -526,17 +532,29 @@ const checkAvailableVehicles = async (req, res) => {
       });
     }
 
-    // Calculate prices and format response
-    const baseRates = {
-      hatchback: 10,
-      sedan: 12,
-      msuv: 15,
-      convertible: 20,
-      coupe: 18,
-      wagon: 12,
-      jeep: 18,
-      van: 12,
-    };
+    // Calculate prices based on device type
+    // Different base rates for Android (lower) and iOS (higher)
+    const baseRates = isAndroid 
+      ? {
+          hatchback: 8,   // Lower rates for Android
+          sedan: 10,
+          msuv: 12,
+          convertible: 17,
+          coupe: 15,
+          wagon: 10,
+          jeep: 15,
+          van: 10,
+        }
+      : {
+          hatchback: 12,  // Higher rates for iOS and other devices
+          sedan: 14,
+          msuv: 18,
+          convertible: 23,
+          coupe: 21,
+          wagon: 14,
+          jeep: 21,
+          van: 14,
+        };
 
     // Group vehicles by type and include driver info
     const groupedVehicles = matchingSchedules.reduce((acc, schedule) => {
@@ -544,11 +562,13 @@ const checkAvailableVehicles = async (req, res) => {
       const vehicleType = driver.vehicleType;
 
       // Pricing configuration
-      const baseRate = baseRates[vehicleType] || 15;
-      const bookingFee = Math.floor(Math.random() * 10) + 1;
-      const serviceFee = 3.12;
-      const blackCarFund = 0.36;
-      const taxRate = 0.18;
+      const baseRate = baseRates[vehicleType] || (isAndroid ? 12 : 18);
+      const bookingFee = isAndroid 
+        ? Math.floor(Math.random() * 5) + 1  // Lower booking fee for Android
+        : Math.floor(Math.random() * 10) + 3; // Higher booking fee for iOS
+      const serviceFee = isAndroid ? 2.50 : 3.99;
+      const blackCarFund = isAndroid ? 0.25 : 0.50;
+      const taxRate = 0.18; // Tax rate remains same as it's regulated
 
       // Price calculations
       const basePrice = distance * baseRate;
@@ -573,6 +593,7 @@ const checkAvailableVehicles = async (req, res) => {
           serviceFee: serviceFee,
           blackCarFund: blackCarFund,
           serviceTax: serviceTax.toFixed(2),
+          deviceType: isAndroid ? "Android" : (isIOS ? "iOS" : "Other") // For debugging
         },
         pickupTime: schedule.timeFrom,
         dropoffTime: schedule.timeTo,
