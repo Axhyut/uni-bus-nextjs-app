@@ -451,7 +451,7 @@ const checkAvailableVehicles = async (req, res) => {
       distance, // in km
     } = req.body;
 
-    const requestedTime = time; // Convert to HH:MM format
+    const requestedTime = time;
 
     // Input validation
     if (!pickupLocation || !dropoffLocation || !date || !time || !distance) {
@@ -463,28 +463,11 @@ const checkAvailableVehicles = async (req, res) => {
 
     console.log("Checking available vehicles:", req.body);
 
-    // Extract key location components
-    const pickupKeywords = extractLocationComponents(pickupLocation);
-    const dropoffKeywords = extractLocationComponents(dropoffLocation);
-
-    console.log("Pickup keywords:", pickupKeywords);
-    console.log("Dropoff keywords:", dropoffKeywords);
-
-    // Find schedules with more flexible location matching
-    const matchingSchedules = await Schedule.findAll({
+    // First get all schedules for the requested date and time, without location filtering
+    const schedules = await Schedule.findAll({
       where: {
         date: date,
         status: "active",
-        [Op.and]: [
-          sequelize.literal(`(
-            pickupLocation = '${pickupLocation}' OR 
-            ${generateKeywordConditions("pickupLocation", pickupKeywords)}
-          )`),
-          sequelize.literal(`(
-            dropoffLocation = '${dropoffLocation}' OR 
-            ${generateKeywordConditions("dropoffLocation", dropoffKeywords)}
-          )`),
-        ],
         timeFrom: {
           [Op.lte]: requestedTime,
         },
@@ -512,11 +495,18 @@ const checkAvailableVehicles = async (req, res) => {
       ],
       order: [["driver", "rating", "DESC"]],
     });
+    
+    // Filter schedules by location matching in JavaScript
+    const matchingSchedules = schedules.filter(schedule => {
+      return (
+        isLocationMatch(schedule.pickupLocation, pickupLocation) &&
+        isLocationMatch(schedule.dropoffLocation, dropoffLocation)
+      );
+    });
 
     // If no matching schedules found, return a proper response
     if (!matchingSchedules || matchingSchedules.length === 0) {
       return res.status(200).json({
-        // Changed to 200 to avoid triggering error handling
         success: false,
         message: "No vehicles available for the selected route and time",
         vehicles: {}, // Return empty object instead of undefined
@@ -596,6 +586,41 @@ const checkAvailableVehicles = async (req, res) => {
     });
   }
 };
+
+// Helper function to check if locations match
+function isLocationMatch(dbLocation, requestLocation) {
+  if (!dbLocation || !requestLocation) return false;
+  
+  // First try exact match
+  if (dbLocation === requestLocation) return true;
+  
+  // Convert to lowercase for case-insensitive comparison
+  const dbLower = dbLocation.toLowerCase();
+  const requestLower = requestLocation.toLowerCase();
+  
+  // Check if one contains the other
+  if (dbLower.includes(requestLower) || requestLower.includes(dbLower)) return true;
+  
+  // Extract city and state names for more robust matching
+  const dbParts = dbLocation.split(',').map(part => part.trim().toLowerCase());
+  const requestParts = requestLocation.split(',').map(part => part.trim().toLowerCase());
+  
+  // Check if any significant parts match
+  for (const dbPart of dbParts) {
+    if (dbPart.length < 3) continue; // Skip short parts like "a", "an", etc.
+    
+    for (const requestPart of requestParts) {
+      if (requestPart.length < 3) continue;
+      
+      // If any significant part matches, consider it a match
+      if (dbPart === requestPart || dbPart.includes(requestPart) || requestPart.includes(dbPart)) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
 
 // Helper function to extract significant location components
 function extractLocationComponents(location) {
