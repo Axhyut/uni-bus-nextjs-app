@@ -441,15 +441,9 @@ const cancelSchedule = async (req, res) => {
 
 const checkAvailableVehicles = async (req, res) => {
   try {
-    const {
-      pickupLocation,
-      dropoffLocation,
-      date,
-      time,
-      distance, // in km
-    } = req.body;
+    const { pickupLocation, dropoffLocation, date, time, distance } = req.body;
 
-    const requestedTime = time; // Convert to HH:MM format
+    const requestedTime = time;
 
     // Input validation
     if (!pickupLocation || !dropoffLocation || !date || !time || !distance) {
@@ -461,13 +455,18 @@ const checkAvailableVehicles = async (req, res) => {
 
     console.log("Checking available vehicles:", req.body);
 
-    // Find schedules that match the criteria
-    const matchingSchedules = await Schedule.findAll({
+    // Extract city and state from locations
+    const pickupCityState = extractCityState(pickupLocation);
+    const dropoffCityState = extractCityState(dropoffLocation);
+
+    console.log("Extracted pickup city/state:", pickupCityState);
+    console.log("Extracted dropoff city/state:", dropoffCityState);
+
+    // First get schedules for the requested date and time
+    const schedules = await Schedule.findAll({
       where: {
         date: date,
         status: "active",
-        pickupLocation: pickupLocation,
-        dropoffLocation: dropoffLocation,
         timeFrom: {
           [Op.lte]: requestedTime,
         },
@@ -496,13 +495,34 @@ const checkAvailableVehicles = async (req, res) => {
       order: [["driver", "rating", "DESC"]],
     });
 
+    console.log(
+      `Found ${schedules.length} schedules matching date/time criteria`
+    );
+
+    // Filter schedules by location matching using city and state
+    const matchingSchedules = schedules.filter((schedule) => {
+      const dbPickupCityState = extractCityState(schedule.pickupLocation);
+      const dbDropoffCityState = extractCityState(schedule.dropoffLocation);
+
+      const pickupMatches = cityStateMatch(dbPickupCityState, pickupCityState);
+      const dropoffMatches = cityStateMatch(
+        dbDropoffCityState,
+        dropoffCityState
+      );
+
+      return pickupMatches && dropoffMatches;
+    });
+
+    console.log(
+      `After location filtering: ${matchingSchedules.length} schedules match`
+    );
+
     // If no matching schedules found, return a proper response
     if (!matchingSchedules || matchingSchedules.length === 0) {
       return res.status(200).json({
-        // Changed to 200 to avoid triggering error handling
         success: false,
         message: "No vehicles available for the selected route and time",
-        vehicles: {}, // Return empty object instead of undefined
+        vehicles: {},
       });
     }
 
@@ -525,7 +545,7 @@ const checkAvailableVehicles = async (req, res) => {
 
       // Pricing configuration
       const baseRate = baseRates[vehicleType] || 15;
-      const bookingFee = Math.floor(Math.random() * 10) + 1; // Dynamic 1-10
+      const bookingFee = Math.floor(Math.random() * 10) + 1;
       const serviceFee = 3.12;
       const blackCarFund = 0.36;
       const taxRate = 0.18;
@@ -533,12 +553,12 @@ const checkAvailableVehicles = async (req, res) => {
       // Price calculations
       const basePrice = distance * baseRate;
       const roundedBase = Math.round(basePrice);
-      const serviceTax = roundedBase * taxRate; // Tax on rounded base price
+      const serviceTax = roundedBase * taxRate;
 
       // Total price with proper rounding
       const totalPrice =
         roundedBase + bookingFee + serviceFee + blackCarFund + serviceTax;
-      const formattedPrice = `₹${totalPrice.toFixed(2)}`; // Format with 2 decimal places
+      const formattedPrice = `₹${totalPrice.toFixed(2)}`;
 
       const vehicleInfo = {
         scheduleId: schedule.id,
@@ -579,6 +599,144 @@ const checkAvailableVehicles = async (req, res) => {
     });
   }
 };
+
+// Helper function to extract city and state from address string
+function extractCityState(location) {
+  if (!location) return { city: null, state: null };
+
+  // Split by commas and clean each part
+  const parts = location.split(",").map((part) => part.trim());
+
+  // For Indian addresses, typically format is:
+  // [Street/Area], [Landmark], [Village/Town], [City], [District], [State], [Country], [PIN]
+
+  // Initialize result
+  let result = { city: null, state: null };
+
+  // Try to identify state (typically second-to-last before country or last if no country)
+  const stateIndex = parts.length >= 2 ? parts.length - 2 : parts.length - 1;
+  let potentialState = parts[stateIndex];
+
+  // Common Indian states
+  const indianStates = [
+    "andhra pradesh",
+    "arunachal pradesh",
+    "assam",
+    "bihar",
+    "chhattisgarh",
+    "goa",
+    "gujarat",
+    "haryana",
+    "himachal pradesh",
+    "jharkhand",
+    "karnataka",
+    "kerala",
+    "madhya pradesh",
+    "maharashtra",
+    "manipur",
+    "meghalaya",
+    "mizoram",
+    "nagaland",
+    "odisha",
+    "punjab",
+    "rajasthan",
+    "sikkim",
+    "tamil nadu",
+    "telangana",
+    "tripura",
+    "uttar pradesh",
+    "uttarakhand",
+    "west bengal",
+  ];
+
+  // Find state in the address
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i].toLowerCase();
+    if (indianStates.some((state) => part.includes(state))) {
+      result.state = parts[i];
+      break;
+    }
+  }
+
+  // City is typically before the state
+  // We'll look for the entry that's not a PIN code and not "India"
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    // Skip if it's a PIN code (6 digits) or "India" or the state
+    if (
+      /^\d{6}$/.test(part.replace(/\s/g, "")) ||
+      part.toLowerCase() === "india" ||
+      part === result.state
+    ) {
+      continue;
+    }
+
+    // Check if it's a likely city name
+    if (part.length > 2 && !/^\d+$/.test(part)) {
+      result.city = part;
+      // Once we find a city, we don't need cities from earlier in the string
+      // which are likely villages or neighborhoods
+      break;
+    }
+  }
+
+  return result;
+}
+
+// Helper function to check if city/state objects match
+function cityStateMatch(location1, location2) {
+  // If we have both city and state in both locations, compare both
+  if (location1.city && location1.state && location2.city && location2.state) {
+    return (
+      compareLocationParts(location1.city, location2.city) &&
+      compareLocationParts(location1.state, location2.state)
+    );
+  }
+
+  // If we have at least one city and one state, check if they match
+  if (location1.city && location2.city) {
+    return compareLocationParts(location1.city, location2.city);
+  }
+
+  if (location1.state && location2.state) {
+    return compareLocationParts(location1.state, location2.state);
+  }
+
+  // If we don't have enough information, fallback to exact match
+  return false;
+}
+
+// Helper function to compare location parts
+function compareLocationParts(part1, part2) {
+  if (!part1 || !part2) return false;
+
+  part1 = part1.toLowerCase();
+  part2 = part2.toLowerCase();
+
+  // Check for exact match
+  if (part1 === part2) return true;
+
+  // Check if one contains the other
+  if (part1.includes(part2) || part2.includes(part1)) return true;
+
+  // Check for significant part match (e.g., "Tezpur" matches "North Tezpur")
+  const words1 = part1.split(/\s+/);
+  const words2 = part2.split(/\s+/);
+
+  for (const word1 of words1) {
+    if (word1.length <= 2) continue; // Skip short words
+
+    for (const word2 of words2) {
+      if (word2.length <= 2) continue;
+
+      if (word1 === word2 || word1.includes(word2) || word2.includes(word1)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
 
 // Add new endpoint to get PNR details by schedule ID
 const getPnrBySchedule = async (req, res) => {
