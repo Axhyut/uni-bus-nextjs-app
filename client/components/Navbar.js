@@ -21,6 +21,7 @@ const Navbar = () => {
   const [isAvailable, setIsAvailable] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [amt, setAmt] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const BASE_URL = "https://ridewise-server.vercel.app";
 
@@ -248,10 +249,6 @@ const Navbar = () => {
                         </span>
                       </button>
 
-                      {/* Balance tooltip */}
-                      <div className="absolute hidden group-hover:block right-0 top-full mt-1 px-3 py-2 text-sm bg-white shadow-lg rounded-lg border">
-                        Available Balance: ₹2,500.00
-                      </div>
                       {/* Edit Profile Button */}
                       <button
                         onClick={handleProfileEdit}
@@ -273,8 +270,6 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-
-              // ... (rest of the code remains the same)
             )}
           </div>
 
@@ -344,17 +339,34 @@ const Navbar = () => {
                   {userName}
                 </div>
 
+                {userType === "driver" && (
+                  <button
+                    onClick={handleToggleAvailability}
+                    className="w-full text-left px-4 py-2 text-white hover:bg-gray-900 rounded flex items-center space-x-2"
+                  >
+                    <div
+                      className={`h-4 w-4 rounded-full ${
+                        isAvailable ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    />
+                    <span>Available?</span>
+                  </button>
+                )}
+
+                {/* Added Wallet Button to Mobile Menu */}
                 <button
-                  onClick={handleToggleAvailability}
-                  className="w-full text-left px-4 py-2 text-white hover:bg-gray-900 rounded flex items-center space-x-2"
+                  onClick={handleWalletClick}
+                  className="w-full text-left px-4 py-2 text-white hover:bg-gray-900 rounded flex items-center justify-between"
                 >
-                  <div
-                    className={`h-4 w-4 rounded-full ${
-                      isAvailable ? "bg-green-500" : "bg-red-500"
-                    }`}
-                  />
-                  <span>Available?</span>
+                  <div className="flex items-center space-x-2">
+                    <Wallet className="h-4 w-4" />
+                    <span>Wallet</span>
+                  </div>
+                  <span className="text-sm font-medium">
+                    ₹{(parseFloat(amt) || 0).toFixed(2)}
+                  </span>
                 </button>
+
                 <button
                   onClick={handleProfileEdit}
                   className="w-full text-left px-4 py-2 text-white hover:bg-gray-900 rounded flex items-center space-x-2"
