@@ -32,6 +32,7 @@ const AuthFlow = () => {
     password: "",
     confirmPassword: "",
     verificationCode: "",
+    resetEmail: "",
   });
 
   const [formData, setFormData] = useState({
@@ -169,16 +170,16 @@ const AuthFlow = () => {
   const handleGoogleSignIn = async () => {
     setError(null);
     setLoading(true);
-  
+
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-  
+
       try {
         const response = await axios.get(
           `${BASE_URL}/api/auth/user/${user.email}`
         );
-  
+
         if (response.data.exists) {
           setRegistrationComplete(true);
           router.push(response.data.userType === "driver" ? "/dashboard" : "/");
@@ -203,7 +204,7 @@ const AuthFlow = () => {
       setLoading(false);
     }
   };
-  
+
   // Updated handleSignOut to prevent unnecessary errors
   const handleSignOut = async () => {
     try {
@@ -262,72 +263,45 @@ const AuthFlow = () => {
     setFormData({ ...formData, [id]: type === "checkbox" ? checked : value });
   };
 
-  const handlePasswordReset = async () => {
-    const { value: email } = await Swal.fire({
-      title: "Reset Password",
-      html: `
-        <input 
-          type="email" 
-          id="email" 
-          class="swal2-input" 
-          placeholder="Enter your email address"
-          autocomplete="email"
-          required
-        >
-      `,
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonText: "Send Reset Link",
-      cancelButtonText: "Cancel",
-      reverseButtons: true,
-      customClass: {
-        validationMessage: "text-red-500 text-sm mt-2",
-      },
-      preConfirm: () => {
-        const email = Swal.getPopup().querySelector("#email").value;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const handlePasswordResetRequest = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-        if (!email) {
-          Swal.showValidationMessage("Please enter an email address");
-          return false;
-        }
-        if (!emailRegex.test(email)) {
-          Swal.showValidationMessage("Please enter a valid email address");
-          return false;
-        }
-        return email;
-      },
-    });
-
-    if (email) {
-      try {
-        await sendPasswordResetEmail(auth, email);
-        await Swal.fire({
-          title: "Email Sent!",
-          html: `
-            <div class="text-center">
-              <svg class="mx-auto mb-4 w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-              </svg>
-              <p class="text-gray-700">
-                We've sent password reset instructions to<br>
-                <span class="font-semibold">${email}</span>
-              </p>
-            </div>
-          `,
-          icon: "success",
-          showConfirmButton: false,
-          timer: 3000,
-        });
-      } catch (error) {
-        await Swal.fire({
-          title: "Failed to Send",
-          text: error.message || "Could not send reset instructions",
-          icon: "error",
-          confirmButtonText: "Try Again",
-        });
-      }
+    try {
+      await sendPasswordResetEmail(auth, authData.resetEmail);
+      Swal.fire({
+        title: "Email Sent!",
+        html: `
+          <div class="text-center">
+            <svg class="mx-auto mb-4 w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+            <p class="text-gray-700">
+              We've sent password reset instructions to<br>
+              <span class="font-semibold">${authData.resetEmail}</span>
+            </p>
+          </div>
+        `,
+        icon: "success",
+        showConfirmButton: true,
+        confirmButtonText: "Back to Login",
+      }).then(() => {
+        setStep("initial");
+        setIsLoginMode(true);
+      });
+    } catch (error) {
+      setError(
+        error.message || "Failed to send reset email. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleForgotPassword = () => {
+    setStep("passwordReset");
+    setAuthData({ ...authData, resetEmail: authData.email }); // Pre-fill with current email if available
   };
 
   return (
@@ -485,7 +459,7 @@ const AuthFlow = () => {
 
               <div className="text-right mb-6">
                 <button
-                  onClick={handlePasswordReset}
+                  onClick={handleForgotPassword}
                   className="text-blue-600 underline"
                 >
                   {isLoginMode ? "Forgot Password?" : ""}
@@ -789,6 +763,48 @@ const AuthFlow = () => {
                 </button>
               </div>
             </form>
+          )}
+          {step === "passwordReset" && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-center mb-4">
+                Reset Your Password
+              </h3>
+              <p className="text-gray-600 text-center mb-6">
+                Enter your email address and we'll send you a link to reset your
+                password.
+              </p>
+              <form onSubmit={handlePasswordResetRequest} className="space-y-4">
+                <div>
+                  <input
+                    type="email"
+                    value={authData.resetEmail}
+                    onChange={(e) =>
+                      setAuthData({ ...authData, resetEmail: e.target.value })
+                    }
+                    placeholder="Email address"
+                    className="w-full p-3 border rounded"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  disabled={loading}
+                >
+                  {loading ? "Sending..." : "Send Reset Link"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("initial");
+                    setIsLoginMode(true);
+                  }}
+                  className="w-full py-3 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                >
+                  Back to Login
+                </button>
+              </form>
+            </div>
           )}
         </div>
       </div>
