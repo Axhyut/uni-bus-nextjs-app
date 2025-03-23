@@ -31,20 +31,20 @@ const WalletPage = () => {
       if (user?.email) {
         fetchProfile(user.email);
         // Set up refresh interval
-        intervalId = setInterval(() => {
-          fetchProfile(user.email);
-        }, 5000);
+        // intervalId = setInterval(() => {
+        //   fetchProfile(user.email);
+        // }, 5000);
       } else {
         setLoading(false);
         setError("User not authenticated");
-        if (intervalId) clearInterval(intervalId);
+        // if (intervalId) clearInterval(intervalId);
       }
     });
 
     // Cleanup function
     return () => {
       unsubscribe();
-      if (intervalId) clearInterval(intervalId);
+      // if (intervalId) clearInterval(intervalId);
     };
   }, []);
 
