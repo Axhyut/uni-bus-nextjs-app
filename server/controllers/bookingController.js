@@ -68,15 +68,15 @@ const createBooking = async (req, res) => {
       }
     );
     //wallet logic for driver
-    await Driver.update(
-      { wallet: sequelize.literal(`wallet + ${price}`) },
-      { 
-        where: { 
-          id: driverId
-        },
-        transaction
-      }
-    );
+    // await Driver.update(
+    //   { wallet: sequelize.literal(`wallet + ${price}`) },
+    //   { 
+    //     where: { 
+    //       id: driverId
+    //     },
+    //     transaction
+    //   }
+    // );
 
     //wallet logic for passenger
     await Passenger.update(
@@ -149,6 +149,57 @@ const createBooking = async (req, res) => {
       success: false,
       message: 'Internal server error while creating booking',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+const completeBooking = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { pnrId } = req.params;
+
+    const pnr = await PNR.findOne({ 
+      where: { PNRid: pnrId },
+      transaction
+    });
+
+    if (!pnr) {
+      await transaction.rollback();
+      return res.status(404).json({ success: false, message: 'Booking not found' });
+    }
+
+    if (pnr.status !== 'active') {
+      await transaction.rollback();
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Booking cannot be completed from current status' 
+      });
+    }
+
+    // Update PNR status to completed
+    await pnr.update({ status: 'completed' }, { transaction });
+
+    // Credit driver's wallet
+    await Driver.update(
+      { wallet: sequelize.literal(`wallet + ${pnr.price}`) },
+      { 
+        where: { id: pnr.driverId },
+        transaction
+      }
+    );
+
+    await transaction.commit();
+
+    res.status(200).json({
+      success: true,
+      message: 'Booking completed and driver wallet credited'
+    });
+  } catch (error) {
+    await transaction.rollback();
+    logger.error('Complete Booking Error', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error completing booking'
     });
   }
 };
@@ -398,6 +449,7 @@ const getBookingDetails = async (req, res) => {
 
 module.exports = {
   createBooking,
+  completeBooking,
   getBookingDetails,
   getPassengerBookings,
   rateDriver

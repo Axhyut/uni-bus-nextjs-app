@@ -5,6 +5,9 @@ const bookingController = require('../controllers/bookingController');
 // Create a new booking
 router.post('/create', bookingController.createBooking);
 
+//complete a booking
+router.put('/complete', bookingController.completeBooking);
+
 // Get booking details by PNR
 router.get('/pnr/:pnr', bookingController.getBookingDetails);
 
