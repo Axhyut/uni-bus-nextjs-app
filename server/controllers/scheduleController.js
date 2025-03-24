@@ -7,7 +7,7 @@ const {
   generateRideCompletionPassengerEmail,
   generateRideCompletionDriverEmail,
 } = require("../utils/emailService");
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 
 // Generate OTP email content
 const generateOtpEmail = (otp, driverName) => {
@@ -216,6 +216,14 @@ const verifyOtp = async (req, res) => {
           transaction,
         }
       ),
+
+      Driver.update(
+        {
+          wallet: sequelize.literal(`wallet + ${pnr.fare}`),
+          where: { id: pnr.driverId },
+          transaction,
+        }
+      )
     ]);
 
     // Commit transaction
