@@ -24,7 +24,7 @@ const PaymentPage = () => {
   const [expiryDate, setExpiryDate] = useState("12/25");
   const [cvv, setCvv] = useState("123");
   const [isLoading, setIsLoading] = useState(true);
-  const [walletBalance, setWalletBalance] = useState(0.00);
+  const [walletBalance, setWalletBalance] = useState(0.0);
 
   const bookingDetails = {
     scheduleId: searchParams.get("scheduleId"),
@@ -124,20 +124,17 @@ const PaymentPage = () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Create booking with PNR
-      const response = await axios.post(
-        `${BASE_URL}/api/booking/create`,
-        {
-          scheduleId: bookingDetails.scheduleId,
-          passengerId: bookingDetails.passengerId,
-          driverId: bookingDetails.driverId,
-          locationFrom: bookingDetails.locationFrom,
-          locationTo: bookingDetails.locationTo,
-          date: bookingDetails.date,
-          time: bookingDetails.time,
-          distance: parseFloat(bookingDetails.distance),
-          price: parseFloat(bookingDetails.price),
-        }
-      );
+      const response = await axios.post(`${BASE_URL}/api/booking/create`, {
+        scheduleId: bookingDetails.scheduleId,
+        passengerId: bookingDetails.passengerId,
+        driverId: bookingDetails.driverId,
+        locationFrom: bookingDetails.locationFrom,
+        locationTo: bookingDetails.locationTo,
+        date: bookingDetails.date,
+        time: bookingDetails.time,
+        distance: parseFloat(bookingDetails.distance),
+        price: parseFloat(bookingDetails.price),
+      });
 
       if (response.data.success) {
         router.push(`/booking/success?pnr=${response.data.pnr}`);
