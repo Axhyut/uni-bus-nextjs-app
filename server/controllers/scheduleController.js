@@ -216,14 +216,6 @@ const verifyOtp = async (req, res) => {
           transaction,
         }
       ),
-
-      Driver.update(
-        {
-          wallet: sequelize.literal(`wallet + ${pnr.fare}`),
-          where: { id: pnr.driverId },
-          transaction,
-        }
-      )
     ]);
 
     // Commit transaction
