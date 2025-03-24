@@ -164,6 +164,7 @@ const ProfileEdit = () => {
                     value={profileData.dateOfBirth || ""}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
+                    disabled={profileData.status == "expired" ? false : true}
                     required
                   />
                 </div>
@@ -175,6 +176,7 @@ const ProfileEdit = () => {
                     value={profileData.licenseNumber || ""}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
+                    disabled={profileData.status == "expired" ? false : true}
                     required
                   />
                 </div>
@@ -187,6 +189,7 @@ const ProfileEdit = () => {
                     value={profileData.licenseValidity || ""}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
+                    disabled={profileData.status == "expired" ? false : true}
                     required
                   />
                 </div>
@@ -199,6 +202,7 @@ const ProfileEdit = () => {
                     value={profileData.vehicleNumber || ""}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
+                    disabled={profileData.status == "expired" ? false : true}
                     required
                   />
                 </div>
@@ -210,6 +214,7 @@ const ProfileEdit = () => {
                     value={profileData.vehicleType || ""}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
+                    disabled={profileData.status == "expired" ? false : true}
                     required
                   >
                     <option value="">Select Vehicle Type</option>
