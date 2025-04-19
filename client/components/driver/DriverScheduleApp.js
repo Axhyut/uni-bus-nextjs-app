@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../Card";
 import { Map } from "../Map";
 import { TripDetails } from "../homecomp/TripDetails";
 import { PendingVerification } from "./PendingVerification";
-import {LicenseExpired} from "./LicenseExpired";
+import { LicenseExpired } from "./LicenseExpired";
 import { DriverFeature } from "./DriverFeature";
 import { Calendar, Clock, MapPin, CalendarPlus } from "lucide-react";
 import DriverSchedules from "./DriverSchedules";
@@ -422,210 +422,206 @@ const DriverScheduleApp = () => {
     <>
       {isDriverAccount && driverStatus === "inactive" ? (
         <PendingVerification />
+      ) : isDriverAccount && driverStatus === "expired" ? (
+        <LicenseExpired />
       ) : (
-        isDriverAccount && driverStatus === "expired" ? (
-          <LicenseExpired />
-      )
-      :
-        (
-          <>
-            {isScheduleSuccess && (
-              <SuccessPopup
-                message={scheduleSuccessMessage}
-                onClose={() => setIsScheduleSuccess(false)}
-              />
-            )}
-            <div className="max-w-[1500px] mx-auto mt-24 px-4">
-              <div className="flex flex-col lg:flex-row gap-8">
-                <div className="border-[1px] border-black bg-white p-3 w-full lg:w-[650px]">
-                  <div className="bg-gray-200 rounded-xl shadow-xl overflow-hidden">
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-6 py-4">
-                      <h2 className="flex items-center text-2xl font-bold text-white">
-                        <CalendarPlus className="mr-2 h-6 w-6" />
-                        Schedule Your Route
-                      </h2>
-                    </div>
-  
-                    {/* Content */}
-                    <div className="p-6">
-                      <div className="space-y-6">
-                        {/* Route Section */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-800">
-                            <MapPin className="mr-2 h-5 w-5 text-blue-600" />
-                            Route Details
-                          </h3>
-                          <div className="space-y-3">
+        <>
+          {isScheduleSuccess && (
+            <SuccessPopup
+              message={scheduleSuccessMessage}
+              onClose={() => setIsScheduleSuccess(false)}
+            />
+          )}
+          <div className="max-w-[1500px] mx-auto mt-24 px-4">
+            <div className="flex flex-col lg:flex-row gap-8">
+              <div className="border-[1px] border-black bg-white p-3 w-full lg:w-[650px]">
+                <div className="bg-gray-200 rounded-xl shadow-xl overflow-hidden">
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-6 py-4">
+                    <h2 className="flex items-center text-2xl font-bold text-white">
+                      <CalendarPlus className="mr-2 h-6 w-6" />
+                      Schedule Your Route
+                    </h2>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    <div className="space-y-6">
+                      {/* Route Section */}
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-800">
+                          <MapPin className="mr-2 h-5 w-5 text-blue-600" />
+                          Route Details
+                        </h3>
+                        <div className="space-y-3">
+                          <div className="relative">
+                            <SearchField
+                              icon="fa-map-marker-alt text-green-500"
+                              placeholder="Pickup Location"
+                              value={pickupSearch}
+                              onChange={setPickupSearch}
+                              suggestions={pickupSuggestions}
+                              onSuggestionClick={(suggestion) =>
+                                handleSuggestionClick(suggestion, true)
+                              }
+                              isLoading={isLoadingPickup}
+                              onClear={clearPickupLocation}
+                              className="bg-white shadow-sm"
+                            />
+                          </div>
+                          <div className="relative">
+                            <SearchField
+                              icon="fa-map-marker-alt text-red-500"
+                              placeholder="Dropoff Location"
+                              value={dropoffSearch}
+                              onChange={setDropoffSearch}
+                              suggestions={dropoffSuggestions}
+                              onSuggestionClick={(suggestion) =>
+                                handleSuggestionClick(suggestion, false)
+                              }
+                              isLoading={isLoadingDropoff}
+                              onClear={clearDropoffLocation}
+                              className="bg-white shadow-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Time Section */}
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-800">
+                          <Clock className="mr-2 h-5 w-5 text-blue-600" />
+                          Time Details
+                        </h3>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Date
+                            </label>
                             <div className="relative">
-                              <SearchField
-                                icon="fa-map-marker-alt text-green-500"
-                                placeholder="Pickup Location"
-                                value={pickupSearch}
-                                onChange={setPickupSearch}
-                                suggestions={pickupSuggestions}
-                                onSuggestionClick={(suggestion) =>
-                                  handleSuggestionClick(suggestion, true)
+                              <input
+                                type="date"
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                value={selectedDate}
+                                onChange={(e) =>
+                                  setSelectedDate(e.target.value)
                                 }
-                                isLoading={isLoadingPickup}
-                                onClear={clearPickupLocation}
-                                className="bg-white shadow-sm"
-                              />
-                            </div>
-                            <div className="relative">
-                              <SearchField
-                                icon="fa-map-marker-alt text-red-500"
-                                placeholder="Dropoff Location"
-                                value={dropoffSearch}
-                                onChange={setDropoffSearch}
-                                suggestions={dropoffSuggestions}
-                                onSuggestionClick={(suggestion) =>
-                                  handleSuggestionClick(suggestion, false)
-                                }
-                                isLoading={isLoadingDropoff}
-                                onClear={clearDropoffLocation}
-                                className="bg-white shadow-sm"
+                                min={new Date().toISOString().split("T")[0]}
                               />
                             </div>
                           </div>
-                        </div>
-  
-                        {/* Time Section */}
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-800">
-                            <Clock className="mr-2 h-5 w-5 text-blue-600" />
-                            Time Details
-                          </h3>
-                          <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Date
+                                Available From
                               </label>
-                              <div className="relative">
-                                <input
-                                  type="date"
-                                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  value={selectedDate}
-                                  onChange={(e) =>
-                                    setSelectedDate(e.target.value)
-                                  }
-                                  min={new Date().toISOString().split("T")[0]}
-                                />
-                              </div>
+                              <input
+                                type="time"
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                value={timeFrom}
+                                onChange={(e) => setTimeFrom(e.target.value)}
+                              />
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Available From
-                                </label>
-                                <input
-                                  type="time"
-                                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  value={timeFrom}
-                                  onChange={(e) => setTimeFrom(e.target.value)}
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                  Available To
-                                </label>
-                                <input
-                                  type="time"
-                                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  value={timeTo}
-                                  onChange={(e) => setTimeTo(e.target.value)}
-                                />
-                              </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Available To
+                              </label>
+                              <input
+                                type="time"
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                value={timeTo}
+                                onChange={(e) => setTimeTo(e.target.value)}
+                              />
                             </div>
                           </div>
                         </div>
-  
-                        {/* Submit Button */}
-                        <button
-                          onClick={handleAddSchedule}
-                          disabled={
-                            !pickupLocation ||
-                            !dropoffLocation ||
-                            !selectedDate ||
-                            !timeFrom ||
-                            !timeTo
-                          }
-                          className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transform transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                        >
-                          <div className="flex items-center justify-center">
-                            <CalendarPlus className="mr-2 h-5 w-5" />
-                            <span>Schedule Route</span>
-                          </div>
-                        </button>
-  
-                        {/* Messages */}
-                        {showLoginMessage && (
-                          <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-lg">
-                            <div className="flex">
-                              <div className="flex-1">
-                                <p className="text-amber-700 font-medium">
-                                  Please log in as a driver to add schedules
-                                </p>
-                                <Link
-                                  href="/auth"
-                                  className="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center mt-2"
-                                >
-                                  Login here →
-                                </Link>
-                              </div>
+                      </div>
+
+                      {/* Submit Button */}
+                      <button
+                        onClick={handleAddSchedule}
+                        disabled={
+                          !pickupLocation ||
+                          !dropoffLocation ||
+                          !selectedDate ||
+                          !timeFrom ||
+                          !timeTo
+                        }
+                        className="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transform transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      >
+                        <div className="flex items-center justify-center">
+                          <CalendarPlus className="mr-2 h-5 w-5" />
+                          <span>Schedule Route</span>
+                        </div>
+                      </button>
+
+                      {/* Messages */}
+                      {showLoginMessage && (
+                        <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-lg">
+                          <div className="flex">
+                            <div className="flex-1">
+                              <p className="text-amber-700 font-medium">
+                                Please log in as a driver to add schedules
+                              </p>
+                              <Link
+                                href="/auth"
+                                className="text-blue-600 hover:text-blue-800 font-medium inline-flex items-center mt-2"
+                              >
+                                Login here →
+                              </Link>
                             </div>
                           </div>
-                        )}
-  
-                        {submitStatus && (
-                          <div
-                            className={`rounded-lg p-4 ${
+                        </div>
+                      )}
+
+                      {submitStatus && (
+                        <div
+                          className={`rounded-lg p-4 ${
+                            submitStatus.includes("successfully")
+                              ? "bg-green-50 border-l-4 border-green-500"
+                              : "bg-red-50 border-l-4 border-red-500"
+                          }`}
+                        >
+                          <p
+                            className={`${
                               submitStatus.includes("successfully")
-                                ? "bg-green-50 border-l-4 border-green-500"
-                                : "bg-red-50 border-l-4 border-red-500"
-                            }`}
+                                ? "text-green-700"
+                                : "text-red-700"
+                            } font-medium`}
                           >
-                            <p
-                              className={`${
-                                submitStatus.includes("successfully")
-                                  ? "text-green-700"
-                                  : "text-red-700"
-                              } font-medium`}
-                            >
-                              {submitStatus}
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                            {submitStatus}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </div>
-  
-                {/* Map Section */}
-                <div className="w-full lg:w-[850px]">
-                  <div className="sticky top-8">
-                    <div className="bg-white shadow-xl border-[1px] border-black p-3 overflow-hidden">
-                      <Map
-                        mapContainer={mapContainer}
-                        className="h-[600px] w-full"
-                      />
-                    </div>
-                    {distance && duration && (
-                      <div className="">
-                        <TripDetails distance={distance} duration={duration} />
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
+
+              {/* Map Section */}
+              <div className="w-full lg:w-[850px]">
+                <div className="sticky top-8">
+                  <div className="bg-white shadow-xl border-[1px] border-black p-3 overflow-hidden">
+                    <Map
+                      mapContainer={mapContainer}
+                      className="h-[600px] w-full"
+                    />
+                  </div>
+                  {distance && duration && (
+                    <div className="">
+                      <TripDetails distance={distance} duration={duration} />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            <DriverSchedules driverId={driverId} />
-            <DriverFeature />
-          </>
-        )
+          </div>
+          <DriverSchedules driverId={driverId} />
+          <DriverFeature />
+        </>
       )}
     </>
   );
-}
+};
 
 export default DriverScheduleApp;

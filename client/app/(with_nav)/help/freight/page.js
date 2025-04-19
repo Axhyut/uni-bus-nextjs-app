@@ -1,13 +1,17 @@
 "use client";
 
-import React, { useState } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import React, { useState } from "react";
+import { ChevronRight, ChevronDown } from "lucide-react";
 
 const Freight = () => {
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const helpTopics = [
-    { title: "Law enforcement data requests", description: "Law enforcement can submit data requests through our public safety portal. Support is available 24 hours a day. Requests for information received from authorized law enforcement authorities will be responded to according to RideWise policies, terms, and applicable laws." }
+    {
+      title: "Law enforcement data requests",
+      description:
+        "Law enforcement can submit data requests through our public safety portal. Support is available 24 hours a day. Requests for information received from authorized law enforcement authorities will be responded to according to RideWise policies, terms, and applicable laws.",
+    },
   ];
 
   const toggleExpand = (index) => {

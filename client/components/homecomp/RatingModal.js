@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Star, X, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import axios from "axios";
+import { Star, X, Check } from "lucide-react";
+import { motion } from "framer-motion";
 
 const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
   const [ratings, setRatings] = useState({
@@ -9,29 +9,31 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
     drivingSkill: 0,
     vehicleCleanliness: 0,
     punctuality: 0,
-    overallSatisfaction: 0
+    overallSatisfaction: 0,
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const BASE_URL = 'https://ridewise-server.vercel.app';
+  const BASE_URL = "https://ridewise-server.vercel.app";
 
   const handleRatingChange = (category, value) => {
-    setRatings(prev => ({
+    setRatings((prev) => ({
       ...prev,
-      [category]: value
+      [category]: value,
     }));
   };
 
-  const isSubmitDisabled = Object.values(ratings).some(rating => rating === 0);
+  const isSubmitDisabled = Object.values(ratings).some(
+    (rating) => rating === 0
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     // Validate that vehicleNumber and pnr are present
     if (!vehicleNumber || !pnr) {
-      setError('Vehicle Number or Booking PNR is missing');
+      setError("Vehicle Number or Booking PNR is missing");
       return;
     }
 
@@ -43,12 +45,15 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
         drivingSkill: ratings.drivingSkill,
         vehicleCleanliness: ratings.vehicleCleanliness,
         punctuality: ratings.punctuality,
-        overallSatisfaction: ratings.overallSatisfaction
+        overallSatisfaction: ratings.overallSatisfaction,
       };
 
-      console.log('Rating Payload:', payload);
+      console.log("Rating Payload:", payload);
 
-      const response = await axios.post(`${BASE_URL}/api/booking/rate`, payload);
+      const response = await axios.post(
+        `${BASE_URL}/api/booking/rate`,
+        payload
+      );
 
       if (response.data.success) {
         onSubmit();
@@ -60,10 +65,10 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
         }, 3000);
       }
     } catch (error) {
-      console.error('Error submitting rating:', error);
+      console.error("Error submitting rating:", error);
       setError(
-        error.response?.data?.message || 
-        'Failed to submit rating. Please try again.'
+        error.response?.data?.message ||
+          "Failed to submit rating. Please try again."
       );
     }
   };
@@ -82,7 +87,9 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
           </div>
         </div>
         <h2 className="text-2xl font-bold text-green-600 mb-2">Thank You!</h2>
-        <p className="text-gray-600 mb-4">Your rating has been submitted successfully.</p>
+        <p className="text-gray-600 mb-4">
+          Your rating has been submitted successfully.
+        </p>
       </motion.div>
     </div>
   );
@@ -102,8 +109,13 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
         className="bg-white rounded-lg p-6 w-full max-w-md mx-4"
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-orange-600">Rate Your Driver</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <h2 className="text-xl font-bold text-orange-600">
+            Rate Your Driver
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -116,20 +128,26 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {[
-            { category: 'driverBehavior', label: 'Driver Behavior' },
-            { category: 'drivingSkill', label: 'Driving Skill' },
-            { category: 'vehicleCleanliness', label: 'Vehicle Cleanliness' },
-            { category: 'punctuality', label: 'Punctuality' },
-            { category: 'overallSatisfaction', label: 'Overall Satisfaction' }
+            { category: "driverBehavior", label: "Driver Behavior" },
+            { category: "drivingSkill", label: "Driving Skill" },
+            { category: "vehicleCleanliness", label: "Vehicle Cleanliness" },
+            { category: "punctuality", label: "Punctuality" },
+            { category: "overallSatisfaction", label: "Overall Satisfaction" },
           ].map(({ category, label }) => (
             <div key={category} className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">{label}</label>
+              <label className="block text-sm font-medium text-gray-700">
+                {label}
+              </label>
               <div className="flex justify-between">
                 {[1, 2, 3, 4, 5].map((value) => (
-                  <label 
-                    key={value} 
+                  <label
+                    key={value}
                     className={`flex items-center space-x-1 cursor-pointer 
-                      ${ratings[category] === value ? 'text-orange-600' : 'text-gray-400'}
+                      ${
+                        ratings[category] === value
+                          ? "text-orange-600"
+                          : "text-gray-400"
+                      }
                     `}
                   >
                     <input
@@ -140,12 +158,12 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
                       onChange={() => handleRatingChange(category, value)}
                       className="sr-only"
                     />
-                    <Star 
+                    <Star
                       className={`h-6 w-6 ${
-                        ratings[category] >= value 
-                          ? 'fill-current text-orange-600' 
-                          : 'text-gray-300'
-                      }`} 
+                        ratings[category] >= value
+                          ? "fill-current text-orange-600"
+                          : "text-gray-300"
+                      }`}
                     />
                   </label>
                 ))}
@@ -157,9 +175,9 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
             type="submit"
             disabled={isSubmitDisabled}
             className={`w-full mt-4 py-2 rounded-lg transition-colors ${
-              isSubmitDisabled 
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                : 'bg-orange-500 text-white hover:bg-orange-600'
+              isSubmitDisabled
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-orange-500 text-white hover:bg-orange-600"
             }`}
           >
             Submit Rating

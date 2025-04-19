@@ -1,15 +1,23 @@
 "use client";
 
-import React, { useState } from 'react';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import React, { useState } from "react";
+import { ChevronRight, ChevronDown } from "lucide-react";
 
 const Driving = () => {
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const helpTopics = [
-    { title: "Trips", description: "If you experience an issue on a trip reserved through the RideWise app, connect to support or visit their Help Center." },
-    { title: "Why do we share your personal data?", description: "RideWise use this personal data to provide you with the Services, detect and prevent fraud, offer you discounts and other products or services, comply with all applicable regulations, for safety and security purposes and to improve products and services. To make it easy for you to use the Services the next time you open the RideWise app, RideWise will hold onto this data until you request deletion of your personal data." }
-    ];
+    {
+      title: "Trips",
+      description:
+        "If you experience an issue on a trip reserved through the RideWise app, connect to support or visit their Help Center.",
+    },
+    {
+      title: "Why do we share your personal data?",
+      description:
+        "RideWise use this personal data to provide you with the Services, detect and prevent fraud, offer you discounts and other products or services, comply with all applicable regulations, for safety and security purposes and to improve products and services. To make it easy for you to use the Services the next time you open the RideWise app, RideWise will hold onto this data until you request deletion of your personal data.",
+    },
+  ];
 
   const toggleExpand = (index) => {
     setExpandedIndex(index === expandedIndex ? null : index);
@@ -17,7 +25,9 @@ const Driving = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 mt-24">
-      <h1 className="text-3xl font-bold mb-6">Support Resources for RideWise Bike and Scooter Trips</h1>
+      <h1 className="text-3xl font-bold mb-6">
+        Support Resources for RideWise Bike and Scooter Trips
+      </h1>
       <ul className="divide-y divide-gray-200">
         {helpTopics.map((topic, index) => (
           <li key={index} className="py-4">

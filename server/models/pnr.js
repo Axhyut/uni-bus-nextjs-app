@@ -1,8 +1,8 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   const PNR = sequelize.define(
-    'PNR',
+    "PNR",
     {
       PNRid: {
         type: DataTypes.UUID,
@@ -13,28 +13,28 @@ module.exports = (sequelize) => {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: 'Passengers',
-          key: 'id',
+          model: "Passengers",
+          key: "id",
         },
-        onDelete: 'CASCADE',
+        onDelete: "CASCADE",
       },
       driverId: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: 'Drivers',
-          key: 'id',
+          model: "Drivers",
+          key: "id",
         },
-        onDelete: 'SET NULL',
+        onDelete: "SET NULL",
       },
       scheduleId: {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: 'Schedules',
-          key: 'id',
+          model: "Schedules",
+          key: "id",
         },
-        onDelete: 'CASCADE',
+        onDelete: "CASCADE",
       },
       locationFrom: {
         type: DataTypes.TEXT,
@@ -63,9 +63,9 @@ module.exports = (sequelize) => {
       status: {
         type: DataTypes.STRING(20),
         allowNull: false,
-        defaultValue: 'active',
+        defaultValue: "active",
         validate: {
-          isIn: [['active', 'completed', 'cancelled']],
+          isIn: [["active", "completed", "cancelled"]],
         },
       },
       otp: {
@@ -94,26 +94,26 @@ module.exports = (sequelize) => {
       },
     },
     {
-      tableName: 'PNR',
+      tableName: "PNR",
       timestamps: true,
-      updatedAt: 'updatedAt',
-      createdAt: 'createdAt',
+      updatedAt: "updatedAt",
+      createdAt: "createdAt",
       indexes: [
         {
-          fields: ['status'],
-          name: 'pnr_status_idx',
+          fields: ["status"],
+          name: "pnr_status_idx",
         },
         {
-          fields: ['passengerId'],
-          name: 'pnr_passenger_idx',
+          fields: ["passengerId"],
+          name: "pnr_passenger_idx",
         },
         {
-          fields: ['driverId'],
-          name: 'pnr_driver_idx',
+          fields: ["driverId"],
+          name: "pnr_driver_idx",
         },
         {
-          fields: ['scheduleId'],
-          name: 'pnr_schedule_idx',
+          fields: ["scheduleId"],
+          name: "pnr_schedule_idx",
         },
       ],
     }
@@ -121,18 +121,18 @@ module.exports = (sequelize) => {
 
   PNR.associate = (models) => {
     PNR.belongsTo(models.Driver, {
-      foreignKey: 'driverId',
-      as: 'driver',
+      foreignKey: "driverId",
+      as: "driver",
     });
 
     PNR.belongsTo(models.Passenger, {
-      foreignKey: 'passengerId',
-      as: 'passenger',
+      foreignKey: "passengerId",
+      as: "passenger",
     });
 
     PNR.belongsTo(models.Schedule, {
-      foreignKey: 'scheduleId',
-      as: 'schedule',
+      foreignKey: "scheduleId",
+      as: "schedule",
     });
   };
 

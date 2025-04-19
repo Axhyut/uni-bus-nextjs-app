@@ -1,28 +1,32 @@
-import React from 'react';
-import { Clock, Shield, MapPin, CreditCard } from 'lucide-react';
+import React from "react";
+import { Clock, Shield, MapPin, CreditCard } from "lucide-react";
 
 const PassengerFeatures = () => {
   const features = [
     {
       icon: Clock,
       title: "24/7 Service",
-      description: "Book rides anytime, day or night. Our service never sleeps, just like your city."
+      description:
+        "Book rides anytime, day or night. Our service never sleeps, just like your city.",
     },
     {
       icon: Shield,
       title: "Safe & Secure",
-      description: "Verified drivers, real-time tracking, and 24/7 customer support for your peace of mind."
+      description:
+        "Verified drivers, real-time tracking, and 24/7 customer support for your peace of mind.",
     },
     {
       icon: MapPin,
       title: "Flexible Pickup",
-      description: "Choose your pickup location anywhere in the city. We'll be there in minutes."
+      description:
+        "Choose your pickup location anywhere in the city. We'll be there in minutes.",
     },
     {
       icon: CreditCard,
       title: "Easy Payment",
-      description: "Multiple payment options available. Pay securely with cash or card."
-    }
+      description:
+        "Multiple payment options available. Pay securely with cash or card.",
+    },
   ];
 
   return (
@@ -40,7 +44,8 @@ const PassengerFeatures = () => {
             </span>
           </h2>
           <p className="text-gray-600 text-md max-w-2xl mx-auto">
-            Experience the best ride-booking service with features designed to make your journey comfortable and hassle-free.
+            Experience the best ride-booking service with features designed to
+            make your journey comfortable and hassle-free.
           </p>
         </div>
 
@@ -48,7 +53,7 @@ const PassengerFeatures = () => {
           {features.map((feature, index) => {
             const Icon = feature.icon;
             return (
-              <div 
+              <div
                 key={index}
                 className="group relative bg-white p-8 rounded-3xl transition-all duration-300 hover:shadow-xl border border-gray-500"
               >
@@ -79,13 +84,18 @@ const PassengerFeatures = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-black to-gray-900 transition-transform group-hover:scale-105" />
             <a className="relative flex items-center" href="#top">
               Book Your Ride Now
-              <svg 
-                className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="ml-2 w-5 h-5 transform group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                />
               </svg>
             </a>
           </button>

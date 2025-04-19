@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 
 export const SearchField = ({
   icon,
@@ -9,7 +9,7 @@ export const SearchField = ({
   onSuggestionClick,
   isLoading,
   onClear,
-  onUseCurrentLocation
+  onUseCurrentLocation,
 }) => {
   const wrapperRef = useRef(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -22,8 +22,8 @@ export const SearchField = ({
         setIsFocused(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -31,17 +31,21 @@ export const SearchField = ({
       <div
         className={`flex items-center w-full border-2 rounded-lg px-4 py-3 bg-white transition-all duration-200 ${
           isFocused
-            ? 'border-blue-500 shadow-md'
-            : 'border-gray-200 hover:border-gray-300'
+            ? "border-blue-500 shadow-md"
+            : "border-gray-200 hover:border-gray-300"
         }`}
       >
         <div className="flex items-center flex-1">
-          <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-            icon.includes('green') ? 'bg-green-100' : 'bg-red-100'
-          }`}>
-            <i className={`fas ${icon} text-lg ${
-              icon.includes('green') ? 'text-green-500' : 'text-red-500'
-            }`}></i>
+          <div
+            className={`flex items-center justify-center w-10 h-10 rounded-full ${
+              icon.includes("green") ? "bg-green-100" : "bg-red-100"
+            }`}
+          >
+            <i
+              className={`fas ${icon} text-lg ${
+                icon.includes("green") ? "text-green-500" : "text-red-500"
+              }`}
+            ></i>
           </div>
           <input
             type="text"
@@ -62,7 +66,7 @@ export const SearchField = ({
           {isLoading && (
             <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-500 border-t-transparent"></div>
           )}
-          
+
           {/* Current Location Button */}
           <button
             onClick={onUseCurrentLocation}
@@ -71,7 +75,7 @@ export const SearchField = ({
           >
             <i className="fas fa-crosshairs text-gray-600 hover:text-blue-500"></i>
           </button>
-          
+
           {value && (
             <button
               onClick={() => {
@@ -103,9 +107,14 @@ export const SearchField = ({
                     <i className="fas fa-map-marker-alt text-gray-500"></i>
                   </div>
                   <div className="ml-3">
-                    <div className="font-medium text-gray-900">{suggestion.text}</div>
+                    <div className="font-medium text-gray-900">
+                      {suggestion.text}
+                    </div>
                     <div className="text-sm text-gray-500 mt-0.5">
-                      {suggestion.place_name.replace(suggestion.text + ', ', '')}
+                      {suggestion.place_name.replace(
+                        suggestion.text + ", ",
+                        ""
+                      )}
                     </div>
                   </div>
                 </div>

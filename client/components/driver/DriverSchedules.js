@@ -166,9 +166,7 @@ const DriverSchedules = ({ driverId }) => {
         )
       );
 
-      await axios.put(
-        `${BASE_URL}/api/schedules/${selectedScheduleId}/cancel`
-      );
+      await axios.put(`${BASE_URL}/api/schedules/${selectedScheduleId}/cancel`);
       setIsCancelModalOpen(false);
       setSelectedScheduleId(null);
       await fetchSchedules();

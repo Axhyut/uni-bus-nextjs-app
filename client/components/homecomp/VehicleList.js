@@ -1,28 +1,28 @@
-import React from 'react';
-import { Star, Clock, CheckCircle, X, Car } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import React from "react";
+import { Star, Clock, CheckCircle, X, Car } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
-export const VehicleList = ({ 
-  vehicles, 
-  selectedVehicle, 
-  setSelectedVehicle, 
-  isOpen, 
-  onClose, 
+export const VehicleList = ({
+  vehicles,
+  selectedVehicle,
+  setSelectedVehicle,
+  isOpen,
+  onClose,
   passengerId,
   pickupLocation,
   dropoffLocation,
-  selectedDate,  
+  selectedDate,
   selectedTime,
-  distance 
+  distance,
 }) => {
   const router = useRouter();
-  
+
   const formatTime = (time) => {
-    return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
+    return new Date(`2000-01-01T${time}`).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
     });
   };
 
@@ -30,9 +30,9 @@ export const VehicleList = ({
     // Find the selected vehicle details
     const selectedVehicleDetails = Object.values(vehicles)
       .flat()
-      .find(v => v.vehicleNumber === selectedVehicle);
+      .find((v) => v.vehicleNumber === selectedVehicle);
 
-      console.log(selectedVehicleDetails);
+    console.log(selectedVehicleDetails);
 
     if (!selectedVehicleDetails) return;
 
@@ -45,10 +45,10 @@ export const VehicleList = ({
       dropoffLocation: encodeURIComponent(dropoffLocation),
       date: selectedDate,
       time: selectedTime,
-      price: selectedVehicleDetails.price.replace('₹', ''),
+      price: selectedVehicleDetails.price.replace("₹", ""),
       distance: distance,
       vehicleNumber: selectedVehicleDetails.vehicleNumber,
-      driverName: selectedVehicleDetails.driverName
+      driverName: selectedVehicleDetails.driverName,
     });
 
     // Redirect to payment page
@@ -68,10 +68,10 @@ export const VehicleList = ({
           />
 
           <motion.div
-            initial={{ x: '100%' }}
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed inset-y-0 right-0 w-full md:w-2/3 lg:max-w-2xl bg-slate-200 border-[1px] border-black shadow-2xl"
           >
             <div className="h-full flex flex-col">
@@ -93,9 +93,11 @@ export const VehicleList = ({
                   {Object.entries(vehicles).map(([type, drivers]) => (
                     <div key={type} className="bg-white rounded-xl shadow-lg">
                       <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-4 rounded-t-xl">
-                        <h4 className="text-xl font-semibold text-white">{type}</h4>
+                        <h4 className="text-xl font-semibold text-white">
+                          {type}
+                        </h4>
                       </div>
-                      
+
                       <div className="divide-y divide-gray-200">
                         {drivers.map((driver, index) => (
                           <motion.div
@@ -103,24 +105,36 @@ export const VehicleList = ({
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="p-6 hover:bg-gray-50 transition-all cursor-pointer"
-                            onClick={() => setSelectedVehicle(driver.vehicleNumber)}
+                            onClick={() =>
+                              setSelectedVehicle(driver.vehicleNumber)
+                            }
                           >
                             <div className="flex items-start gap-4">
                               <input
                                 type="radio"
                                 name="vehicle"
-                                checked={selectedVehicle === driver.vehicleNumber}
-                                onChange={() => setSelectedVehicle(driver.vehicleNumber)}
+                                checked={
+                                  selectedVehicle === driver.vehicleNumber
+                                }
+                                onChange={() =>
+                                  setSelectedVehicle(driver.vehicleNumber)
+                                }
                                 className="mt-1 h-4 w-4 cursor-pointer"
                               />
                               <div className="flex-1">
                                 <div className="flex justify-between">
                                   <div>
-                                    <p className="font-semibold">{driver.driverName}</p>
-                                    <p className="text-sm text-gray-500">{driver.vehicleNumber}</p>
+                                    <p className="font-semibold">
+                                      {driver.driverName}
+                                    </p>
+                                    <p className="text-sm text-gray-500">
+                                      {driver.vehicleNumber}
+                                    </p>
                                     <div className="flex items-center mt-1">
                                       <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                                      <span className="ml-1 text-sm">{driver.rating}</span>
+                                      <span className="ml-1 text-sm">
+                                        {driver.rating}
+                                      </span>
                                     </div>
                                   </div>
                                   <div className="text-lg font-bold text-green-600">
@@ -129,7 +143,8 @@ export const VehicleList = ({
                                 </div>
                                 <div className="mt-2 text-sm text-gray-500">
                                   <Clock className="inline-block h-4 w-4 mr-1" />
-                                  {formatTime(driver.pickupTime)} - {formatTime(driver.dropoffTime)}
+                                  {formatTime(driver.pickupTime)} -{" "}
+                                  {formatTime(driver.dropoffTime)}
                                 </div>
                               </div>
                             </div>

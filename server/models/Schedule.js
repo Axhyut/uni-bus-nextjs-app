@@ -1,8 +1,8 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   const Schedule = sequelize.define(
-    'Schedule',
+    "Schedule",
     {
       id: {
         type: DataTypes.UUID,
@@ -13,8 +13,8 @@ module.exports = (sequelize) => {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: 'Drivers', // Make sure this matches the table name
-          key: 'id',
+          model: "Drivers", // Make sure this matches the table name
+          key: "id",
         },
       },
       pickupLocation: {
@@ -39,9 +39,9 @@ module.exports = (sequelize) => {
       },
       status: {
         type: DataTypes.STRING(20),
-        defaultValue: 'active',
+        defaultValue: "active",
         validate: {
-          isIn: [['active', 'busy', 'completed', 'cancelled']],
+          isIn: [["active", "busy", "completed", "cancelled"]],
         },
       },
       completedAt: {
@@ -51,11 +51,11 @@ module.exports = (sequelize) => {
     },
     {
       timestamps: true,
-      tableName: 'Schedules', // Explicitly specify table name
+      tableName: "Schedules", // Explicitly specify table name
       indexes: [
         {
-          fields: ['driverId', 'date'],
-          name: 'schedule_driver_date_idx',
+          fields: ["driverId", "date"],
+          name: "schedule_driver_date_idx",
         },
       ],
     }
@@ -63,9 +63,9 @@ module.exports = (sequelize) => {
 
   Schedule.associate = (models) => {
     Schedule.belongsTo(models.Driver, {
-      foreignKey: 'driverId',
-      as: 'driver',
-      onDelete: 'CASCADE',
+      foreignKey: "driverId",
+      as: "driver",
+      onDelete: "CASCADE",
     });
   };
 

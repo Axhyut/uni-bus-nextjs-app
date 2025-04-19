@@ -5,9 +5,7 @@ export const Card = ({ children }) => (
 );
 
 export const CardHeader = ({ children }) => (
-  <div className="flex flex-col space-y-1.5 p-6">
-    {children}
-  </div>
+  <div className="flex flex-col space-y-1.5 p-6">{children}</div>
 );
 
 export const CardTitle = ({ children }) => (
@@ -17,14 +15,18 @@ export const CardTitle = ({ children }) => (
 );
 
 export const CardContent = ({ children }) => (
-  <div className="p-6 pt-0">
-    {children}
-  </div>
+  <div className="p-6 pt-0">{children}</div>
 );
 
-export const Button = ({ children, variant = "default", className = "", ...props }) => {
-  const baseStyles = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
-  
+export const Button = ({
+  children,
+  variant = "default",
+  className = "",
+  ...props
+}) => {
+  const baseStyles =
+    "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
+
   const variants = {
     default: "bg-primary text-primary-foreground hover:bg-primary/90",
     secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
