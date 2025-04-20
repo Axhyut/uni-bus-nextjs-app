@@ -10,7 +10,7 @@ const ProfileEdit = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const fetchProfile = async (email) => {
     try {
@@ -161,7 +161,7 @@ const ProfileEdit = () => {
                   <input
                     type="date"
                     name="dateOfBirth"
-                    value={profileData.dateOfBirth || ""}
+                    value={profileData.dateOfBirth?.split("T")[0] || ""}
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
                     disabled={profileData.status == "expired" ? false : true}
@@ -186,7 +186,7 @@ const ProfileEdit = () => {
                   <input
                     type="date"
                     name="licenseValidity"
-                    value={profileData.licenseValidity || ""}
+                    value={profileData.licenseValidity?.split("T")[0] || ""} // Format the date string
                     onChange={handleInputChange}
                     className="w-full p-2 border rounded"
                     disabled={profileData.status == "expired" ? false : true}

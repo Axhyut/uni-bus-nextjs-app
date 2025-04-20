@@ -12,7 +12,7 @@ const Dashboard = () => {
   const [driverStatus, setDriverStatus] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [driverId, setDriverId] = useState(null);
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   // Function to fetch user data
   const fetchUserData = async (email) => {

@@ -2,6 +2,7 @@ import React from "react";
 import { Star, Clock, CheckCircle, X, Car } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export const VehicleList = ({
   vehicles,
@@ -17,6 +18,7 @@ export const VehicleList = ({
   distance,
 }) => {
   const router = useRouter();
+  const BASE_URL = "http://localhost:3001";
 
   const formatTime = (time) => {
     return new Date(`2000-01-01T${time}`).toLocaleTimeString("en-US", {
@@ -26,33 +28,52 @@ export const VehicleList = ({
     });
   };
 
-  const handleConfirmBooking = (driver) => {
-    // Find the selected vehicle details
-    const selectedVehicleDetails = Object.values(vehicles)
-      .flat()
-      .find((v) => v.vehicleNumber === selectedVehicle);
+  const handleConfirmBooking = async () => {
+    try {
+      const selectedVehicleDetails = Object.values(vehicles)
+        .flat()
+        .find((v) => v.vehicleNumber === selectedVehicle);
 
-    console.log(selectedVehicleDetails);
+      if (!selectedVehicleDetails) {
+        alert("Please select a vehicle first");
+        return;
+      }
 
-    if (!selectedVehicleDetails) return;
+      // Call the reservation endpoint
+      const reservationResponse = await axios.post(
+        `${BASE_URL}/api/schedules/reserve`,
+        {
+          scheduleId: selectedVehicleDetails.scheduleId,
+          passengerId: passengerId, // Make sure passengerId is available in scope
+        }
+      );
 
-    // Construct query parameters for payment page
-    const params = new URLSearchParams({
-      scheduleId: selectedVehicleDetails.scheduleId,
-      passengerId,
-      driverId: selectedVehicleDetails.driverId,
-      pickupLocation: encodeURIComponent(pickupLocation),
-      dropoffLocation: encodeURIComponent(dropoffLocation),
-      date: selectedDate,
-      time: selectedTime,
-      price: selectedVehicleDetails.price.replace("₹", ""),
-      distance: distance,
-      vehicleNumber: selectedVehicleDetails.vehicleNumber,
-      driverName: selectedVehicleDetails.driverName,
-    });
+      // Construct query parameters with reservation details
+      const params = new URLSearchParams({
+        scheduleId: selectedVehicleDetails.scheduleId,
+        passengerId,
+        driverId: selectedVehicleDetails.driverId,
+        pickupLocation: encodeURIComponent(pickupLocation),
+        dropoffLocation: encodeURIComponent(dropoffLocation),
+        date: selectedDate,
+        time: selectedTime,
+        price: selectedVehicleDetails.price.replace("₹", ""),
+        distance: distance,
+        vehicleNumber: selectedVehicleDetails.vehicleNumber,
+        driverName: selectedVehicleDetails.driverName,
+        reservationId: reservationResponse.data.reservationId,
+        expiresAt: reservationResponse.data.expiresAt,
+      });
 
-    // Redirect to payment page
-    router.push(`/payment?${params.toString()}`);
+      // Redirect to payment page only after successful reservation
+      router.push(`/payment?${params.toString()}`);
+    } catch (error) {
+      console.error("Reservation failed:", error);
+      alert(
+        error.response?.data?.error ||
+          "Failed to reserve vehicle. Please try again."
+      );
+    }
   };
 
   return (

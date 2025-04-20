@@ -22,7 +22,7 @@ const SuccessPage = () => {
   const [error, setError] = useState(null);
   const pnr = searchParams.get("pnr");
 
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     const fetchBookingDetails = async () => {

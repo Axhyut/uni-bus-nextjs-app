@@ -40,7 +40,7 @@ const PaymentPage = () => {
     driverName: searchParams.get("driverName"),
   };
 
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     const fetchWalletBalance = async (email) => {

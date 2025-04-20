@@ -447,6 +447,75 @@ const cancelSchedule = async (req, res) => {
   }
 };
 
+const reserve = async (req, res) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { scheduleId, passengerId } = req.body;
+
+    // 1. Find schedule with lock to prevent race conditions
+    const schedule = await Schedule.findByPk(scheduleId, {
+      transaction,
+      lock: transaction.LOCK.UPDATE
+    });
+
+    if (!schedule) {
+      await transaction.rollback();
+      return res.status(404).json({ error: "Schedule not found" });
+    }
+
+    // 2. Check for valid reservation status
+    const isReserved = schedule.status === "reserved" && 
+                      new Date(schedule.reservedAt) > new Date(Date.now() - 5 * 60 * 1000);
+
+    if (isReserved) {
+      await transaction.rollback();
+      return res.status(409).json({ 
+        error: "Schedule already reserved",
+        reservedUntil: new Date(schedule.reservedAt.getTime() + 5 * 60 * 1000)
+      });
+    }
+
+    // 3. Update schedule status with reservation info
+    await Schedule.update({
+      status: "reserved",
+      reservedAt: new Date(),
+      reservedBy: passengerId
+    }, {
+      where: { id: scheduleId },
+      transaction
+    });
+
+    // 4. Set auto-release timeout
+    setTimeout(async () => {
+      const currentSchedule = await Schedule.findByPk(scheduleId);
+      if (currentSchedule?.status === "reserved" && 
+          currentSchedule.reservedBy === passengerId) {
+        await Schedule.update({
+          status: "active",
+          reservedAt: null,
+          reservedBy: null
+        }, { where: { id: scheduleId } });
+      }
+    }, 5 * 60 * 1000);
+
+    await transaction.commit();
+
+    res.status(200).json({
+      message: "Schedule reserved for 5 minutes",
+      reservationId: scheduleId,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000)
+    });
+
+  } catch (error) {
+    await transaction.rollback();
+    console.error("Reservation error:", error);
+    res.status(500).json({
+      error: "Internal server error",
+      details: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
+  }
+};
+
 const checkAvailableVehicles = async (req, res) => {
   try {
     const { pickupLocation, dropoffLocation, date, time, distance } = req.body;
@@ -906,4 +975,5 @@ module.exports = {
   sendOtp,
   verifyOtp,
   getPnrBySchedule,
+  reserve,
 };

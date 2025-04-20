@@ -8,6 +8,7 @@ const {
   sendOtp,
   verifyOtp,
   getPnrBySchedule,
+  reserve,
 } = require("../controllers/scheduleController");
 
 router.post("/schedules", addSchedule);
@@ -17,5 +18,5 @@ router.post("/booking/check-availability", checkAvailableVehicles);
 router.post("/schedules/:scheduleId/send-otp", sendOtp);
 router.post("/schedules/:scheduleId/verify-otp", verifyOtp);
 router.get("/pnr/schedule/:scheduleId", getPnrBySchedule);
-
+router.post("/schedules/reserve", reserve);
 module.exports = router;

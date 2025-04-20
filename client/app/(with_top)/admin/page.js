@@ -16,7 +16,7 @@ const AdminPanel = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     const storedAdmin = localStorage.getItem("admin");

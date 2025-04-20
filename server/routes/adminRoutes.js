@@ -70,8 +70,25 @@ router.patch("/api/drivers/:id/verify", async (req, res) => {
       return res.status(404).json({ error: "Driver not found" });
     }
 
+    // First update the driver status
     await driver.update({ status });
 
+    // Then send email notification
+    try {
+      const [emailResult] = await Promise.allSettled([
+        sendEmail(driver.email, generateVerificationEmail(driver)),
+      ]);
+
+      // Log email results using console instead of undefined logger
+      console.log("Email Sending Results:", {
+        driver: emailResult.status,
+      });
+    } catch (emailError) {
+      // Handle email errors without blocking the response
+      console.error("Email Sending Error:", emailError);
+    }
+
+    // Send single response after all operations
     res.json({
       message: "Driver status updated successfully",
       driver: {
@@ -79,29 +96,13 @@ router.patch("/api/drivers/:id/verify", async (req, res) => {
         status: driver.status,
       },
     });
-
-    try {
-      const [driverVerificationEmailSent] = await Promise.allSettled([
-        sendEmail(driver.email, generateVerificationEmail(driver)),
-      ]);
-
-      // Log email sending results
-      logger.info("Email Sending Results", {
-        driver: driverVerificationEmailSent.status,
-      });
-
-      // Optional: You could implement a notification system
-      // for failed email sends if needed
-    } catch (emailError) {
-      logger.error("Email Sending Error", {
-        error: emailError,
-        driver: driver.id,
-      });
-      // Non-blocking email error
-    }
   } catch (error) {
+    // Handle main errors
     console.error("Error updating driver status:", error);
-    res.status(500).json({ error: "Failed to update driver status" });
+    res.status(500).json({
+      error: "Failed to update driver status",
+      details: error.message,
+    });
   }
 });
 

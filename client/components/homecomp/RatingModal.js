@@ -14,7 +14,7 @@ const RatingModal = ({ isOpen, onClose, vehicleNumber, pnr, onSubmit }) => {
   const [error, setError] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const handleRatingChange = (category, value) => {
     setRatings((prev) => ({

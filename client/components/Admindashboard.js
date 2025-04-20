@@ -50,7 +50,13 @@ const DriversTable = ({ drivers, handleVerifyDriver, isLoading }) => (
               </div>
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {driver.dateOfBirth}
+              {new Date(driver.dateOfBirth)
+                .toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+                .replace(/\//g, "-")}
             </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {driver.email}
@@ -173,7 +179,7 @@ const Admindashboard = ({ adminName, onLogout }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userTab, setUserTab] = useState("drivers"); // Default table view
 
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   // Fetch drivers and passengers data
   const [refresh, setRefresh] = useState(false); // State to trigger data refresh

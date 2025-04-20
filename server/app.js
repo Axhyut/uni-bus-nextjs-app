@@ -6,6 +6,7 @@ const authRoutes = require("./routes/authRoutes");
 const scheduleRoutes = require("./routes/scheduleRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const bookingRoutes = require("./routes/bookingRoutes");
+const {Schedule} = require('./models/Schedule');
 
 const app = express();
 

@@ -21,7 +21,9 @@ const BookingStatusPanel = ({ isOpen, onClose, passengerId }) => {
   const [ratingModalOpen, setRatingModalOpen] = useState(false);
   const [selectedBookingForRating, setSelectedBookingForRating] =
     useState(null);
-  const BASE_URL = "https://ridewise-server.vercel.app";
+
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
   useEffect(() => {
     if (isOpen && passengerId) {
       fetchBookings();

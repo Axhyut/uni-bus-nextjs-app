@@ -39,7 +39,7 @@ const DriverSchedules = ({ driverId }) => {
 
   const scheduleRef = useRef(null);
 
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const statusOptions = [
     { value: "all", label: "All Schedules" },

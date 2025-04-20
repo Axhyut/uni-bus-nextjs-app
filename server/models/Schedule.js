@@ -13,7 +13,7 @@ module.exports = (sequelize) => {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: "Drivers", // Make sure this matches the table name
+          model: "Drivers",
           key: "id",
         },
       },
@@ -41,8 +41,22 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING(20),
         defaultValue: "active",
         validate: {
-          isIn: [["active", "busy", "completed", "cancelled"]],
+          isIn: [["active", "reserved", "busy", "completed", "cancelled"]],
         },
+      },
+      reservedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        comment: "Timestamp when the schedule was reserved",
+      },
+      reservedBy: {
+        type: DataTypes.UUID,
+        allowNull: true,
+        references: {
+          model: "Passengers",
+          key: "id",
+        },
+        comment: "Passenger who reserved this schedule",
       },
       completedAt: {
         type: DataTypes.DATE,
@@ -51,11 +65,19 @@ module.exports = (sequelize) => {
     },
     {
       timestamps: true,
-      tableName: "Schedules", // Explicitly specify table name
+      tableName: "Schedules",
       indexes: [
         {
           fields: ["driverId", "date"],
           name: "schedule_driver_date_idx",
+        },
+        {
+          fields: ["reservedAt"],
+          name: "schedule_reservation_time_idx",
+        },
+        {
+          fields: ["status"],
+          name: "schedule_status_idx",
         },
       ],
     }
@@ -66,6 +88,12 @@ module.exports = (sequelize) => {
       foreignKey: "driverId",
       as: "driver",
       onDelete: "CASCADE",
+    });
+
+    Schedule.belongsTo(models.Passenger, {
+      foreignKey: "reservedBy",
+      as: "reservedPassenger",
+      onDelete: "SET NULL",
     });
   };
 

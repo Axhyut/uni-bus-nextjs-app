@@ -54,7 +54,7 @@ const BookingApp = () => {
   const userLocationMarkerRef = useRef(null);
   const geolocateControlRef = useRef(null);
 
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     const initializeMap = () => {

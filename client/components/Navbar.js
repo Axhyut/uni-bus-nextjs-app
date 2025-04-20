@@ -23,7 +23,7 @@ const Navbar = () => {
   const [amt, setAmt] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const BASE_URL = "https://ridewise-server.vercel.app";
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   const fetchProfile = async (email) => {
     try {
