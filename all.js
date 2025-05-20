@@ -1,377 +1,135 @@
-// models/admin.js
-const { Model, DataTypes } = require("sequelize");
+require('dotenv').config() // Load environment variables from .env file
 
-module.exports = (sequelize) => {
-  class Admin extends Model {}
+// Sequelize models based on your handwritten DB design
 
-  Admin.init(
-    {
-      admin_id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4, // Use Sequelize's UUIDV4 for UUID generation
-        primaryKey: true,
-        allowNull: false,
-      },
-      admin_name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      password: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-    },
-    {
-      sequelize,
-      modelName: "Admin",
-      tableName: "Admin", // This makes sure the table name is exactly "Admin"
-      timestamps: false, // Set to true if you want createdAt/updatedAt fields
-    }
-  );
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
+  {
+    host: process.env.DB_HOST,
+    dialect: 'postgres',
+    port: process.env.DB_PORT || 5432, // optional, default port
+  }
+);
 
-  return Admin;
-};
 
-// models/driver.js
-const { DataTypes } = require("sequelize");
+// USER Table
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  firstName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: { isEmail: true },
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+}, {
+  timestamps: true,
+});
 
-module.exports = (sequelize) => {
-  const Driver = sequelize.define(
-    "Driver",
-    {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-      },
-      email: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-      },
-      firstName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      lastName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      dateOfBirth: {
-        type: DataTypes.DATE,
-        allowNull: false,
-      },
-      wallet: {
-        type: DataTypes.DECIMAL(8, 2),
-        defaultValue: 0.0,
-      },
-      phoneNumber: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      licenseNumber: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-      },
-      vehicleNumber: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-      },
-      vehicleType: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      isAvailable: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-      },
-      status: {
-        type: DataTypes.STRING(20),
-        defaultValue: "inactive",
-      },
-      licenseValidity: {
-        type: DataTypes.DATE,
-        allowNull: false,
-      },
-      gender: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-      },
-      rating: {
-        type: DataTypes.DECIMAL(3, 2),
-        defaultValue: 0.0,
-      },
-    },
-    {
-      timestamps: true,
-      tableName: "Drivers", // Explicitly specify table name
-    }
-  );
+// ROUTE Table
+const Route = sequelize.define('Route', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  from: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  to: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+}, {
+  timestamps: true,
+});
 
-  Driver.associate = (models) => {
-    Driver.hasMany(models.Schedule, {
-      foreignKey: "driverId",
-      as: "schedules",
-      onDelete: "CASCADE",
-    });
-  };
+// STATION Table
+const Station = sequelize.define('Station', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  location: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+}, {
+  timestamps: true,
+});
+Station.belongsTo(Route, { foreignKey: 'routeId', onDelete: 'CASCADE' });
 
-  return Driver;
-};
+// BUS Table
+const Bus = sequelize.define('Bus', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  departureTime: {
+    type: DataTypes.TIME,
+    allowNull: false,
+  },
+  arrivalTime: {
+    type: DataTypes.TIME,
+    allowNull: false,
+  },
+  seatAvailability: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+}, {
+  timestamps: true,
+});
+Bus.belongsTo(Route, { foreignKey: 'routeId', onDelete: 'CASCADE' });
 
-//model passenger.js
-const { DataTypes } = require("sequelize");
-module.exports = (sequelize) => {
-  const Passenger = sequelize.define(
-    "Passenger",
-    {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-      },
-      email: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false,
-      },
-      firstName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      lastName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      phoneNumber: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      gender: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-      },
-      status: {
-        type: DataTypes.STRING(20),
-        defaultValue: "active",
-      },
-      wallet: {
-        type: DataTypes.DECIMAL(8, 2),
-        defaultValue: 0.0,
-      },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-    },
-    {
-      timestamps: true,
-    }
-  );
-  return Passenger;
-};
+// BOOKING Table
+const Booking = sequelize.define('Booking', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  bookingDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: false,
+  },
+  bookingTime: {
+    type: DataTypes.TIME,
+    allowNull: false,
+  },
+}, {
+  timestamps: true,
+});
+Booking.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });
+Booking.belongsTo(Bus, { foreignKey: 'busId', onDelete: 'CASCADE' });
 
-// models/schedule.js
-const { DataTypes } = require("sequelize");
-
-module.exports = (sequelize) => {
-  const Schedule = sequelize.define(
-    "Schedule",
-    {
-      id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-      },
-      driverId: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: "Drivers", // Make sure this matches the table name
-          key: "id",
-        },
-      },
-      pickupLocation: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      dropoffLocation: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      timeFrom: {
-        type: DataTypes.TIME,
-        allowNull: false,
-      },
-      timeTo: {
-        type: DataTypes.TIME,
-        allowNull: false,
-      },
-      date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-      },
-      status: {
-        type: DataTypes.STRING(20),
-        defaultValue: "active",
-        validate: {
-          isIn: [["active", "reserved", "busy", "completed", "cancelled"]],
-        },
-      },
-    },
-    {
-      timestamps: true,
-      tableName: "Schedules", // Explicitly specify table name
-      indexes: [
-        {
-          fields: ["driverId", "date"],
-          name: "schedule_driver_date_idx",
-        },
-      ],
-    }
-  );
-
-  Schedule.associate = (models) => {
-    Schedule.belongsTo(models.Driver, {
-      foreignKey: "driverId",
-      as: "driver",
-      onDelete: "CASCADE",
-    });
-  };
-
-  return Schedule;
-};
-
-// models/pnr.js
-//PNR model (models/pnr.js)
-const { DataTypes } = require("sequelize");
-
-module.exports = (sequelize) => {
-  const PNR = sequelize.define(
-    "PNR",
-    {
-      PNRid: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        primaryKey: true,
-      },
-      passengerId: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: "Passengers",
-          key: "id",
-        },
-        onDelete: "CASCADE",
-      },
-      driverId: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: "Drivers",
-          key: "id",
-        },
-        onDelete: "SET NULL",
-      },
-      scheduleId: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        references: {
-          model: "Schedules",
-          key: "id",
-        },
-        onDelete: "CASCADE",
-      },
-      locationFrom: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      locationTo: {
-        type: DataTypes.TEXT,
-        allowNull: false,
-      },
-      date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-      },
-      time: {
-        type: DataTypes.TIME,
-        allowNull: false,
-      },
-      distance: {
-        type: DataTypes.DECIMAL(5, 2),
-        allowNull: false,
-      },
-      price: {
-        type: DataTypes.DECIMAL(8, 2),
-        allowNull: false,
-      },
-      status: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-        defaultValue: "active",
-        validate: {
-          isIn: [["active", "completed", "cancelled"]],
-        },
-      },
-      createdAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updatedAt: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-    },
-    {
-      tableName: "PNR",
-      timestamps: true,
-      updatedAt: "updatedAt",
-      createdAt: "createdAt",
-      indexes: [
-        {
-          fields: ["status"],
-          name: "pnr_status_idx",
-        },
-        {
-          fields: ["passengerId"],
-          name: "pnr_passenger_idx",
-        },
-        {
-          fields: ["driverId"],
-          name: "pnr_driver_idx",
-        },
-        {
-          fields: ["scheduleId"],
-          name: "pnr_schedule_idx",
-        },
-      ],
-    }
-  );
-
-  // Updated associations
-  PNR.associate = (models) => {
-    PNR.belongsTo(models.Driver, {
-      foreignKey: "driverId",
-      as: "driver",
-    });
-
-    PNR.belongsTo(models.Passenger, {
-      foreignKey: "passengerId",
-      as: "passenger",
-    });
-
-    PNR.belongsTo(models.Schedule, {
-      foreignKey: "scheduleId",
-      as: "schedule",
-    });
-  };
-
-  return PNR;
+// Export models
+module.exports = {
+  sequelize,
+  User,
+  Route,
+  Station,
+  Bus,
+  Booking,
 };

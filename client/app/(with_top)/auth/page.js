@@ -312,7 +312,7 @@ const AuthFlow = () => {
           <h2 className="text-2xl font-bold text-center mb-6">
             {step === "profile"
               ? "Complete Your Profile"
-              : "Welcome to RideWise"}
+              : "Welcome to UniBuss"}
           </h2>
 
           {error && (
@@ -544,7 +544,7 @@ const AuthFlow = () => {
                       onChange={() => setUserType("passenger")}
                       className="mr-2"
                     />
-                    Passenger
+                    Student
                   </label>
                   <label className="flex items-center">
                     <input
@@ -554,7 +554,7 @@ const AuthFlow = () => {
                       onChange={() => setUserType("driver")}
                       className="mr-2"
                     />
-                    Driver
+                    Bus
                   </label>
                 </div>
               </div>

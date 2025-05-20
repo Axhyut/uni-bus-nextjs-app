@@ -70,7 +70,7 @@ const TopBar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold">Ridewise</span>
+              <span className="text-2xl font-bold">UniBuss</span>
             </Link>
           </div>
 

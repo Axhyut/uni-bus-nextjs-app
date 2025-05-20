@@ -510,10 +510,10 @@ const BookingApp = () => {
               <div className="relative flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">
-                    Book Your Journey
+                    Catch Your Campus Ride
                   </h2>
                   <p className="text-gray-600 mt-1">
-                    Find the perfect ride for your trip
+                    Track your university bus in real-time
                   </p>
                 </div>
                 <div className="flex items-center gap-4">

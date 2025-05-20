@@ -52,9 +52,9 @@ const Contact = () => {
   return (
     <div className="max-w-4xl mx-auto p-6 mt-20">
       <header className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-black-600">Contact RideWise</h1>
+        <h1 className="text-3xl font-bold text-black-600">Contact UniBuss</h1>
         <p className="text-gray-600">
-          Have questions about driving with RideWise? We&apos;re here to give
+          Have questions about driving with UniBuss? We&apos;re here to give
           you answers.
         </p>
       </header>
@@ -69,7 +69,7 @@ const Contact = () => {
           </p>
           <ul className="list-disc ml-5 mt-4 text-gray-700">
             <li>
-              <strong>Email:</strong> ridewise.care@gmail.com
+              <strong>Email:</strong> UniBuss.care@gmail.com
             </li>
             <li>
               <strong>Phone:</strong> +91 6003644157
@@ -137,7 +137,7 @@ const Contact = () => {
 
       <footer className="text-center mt-6">
         <p className="text-gray-600">
-          &copy; 2025 RideWise. All rights reserved.
+          &copy; 2025 UniBuss. All rights reserved.
         </p>
       </footer>
     </div>

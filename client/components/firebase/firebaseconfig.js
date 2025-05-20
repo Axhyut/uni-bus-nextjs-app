@@ -1,14 +1,16 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+// Import the functions you need from the SDKs you need
+
+import { initializeApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyCJB7kvGDwlfiklhSPEuKYpX1C79Gfb-Z8",
+  authDomain: "unibuss-e7877.firebaseapp.com",
+  projectId: "unibuss-e7877",
+  storageBucket: "unibuss-e7877.firebasestorage.app",
+  messagingSenderId: "323862128464",
+  appId: "1:323862128464:web:3a9e3494d27db44655ee55",
+  measurementId: "G-49TFPKQXV1"
 };
 
 // Initialize Firebase

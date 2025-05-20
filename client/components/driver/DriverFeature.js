@@ -76,7 +76,7 @@ export const DriverFeature = () => {
             Why Choose RideWise?
           </h2>
           <p className="text-gray-600 text-md max-w-2xl mx-auto">
-            Enjoy the benefits of being a RideWise driver with our feature-rich
+            Enjoy the benefits of being a UniBuss driver with our feature-rich
             platform designed to make your journey smooth and profitable.
           </p>
         </div>

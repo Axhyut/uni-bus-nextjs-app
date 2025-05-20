@@ -12,12 +12,36 @@ const AboutPage = () => {
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <div className="relative z-10 flex flex-col justify-center items-center h-full text-center">
           <h1 className="text-5xl font-bold mb-4">
-            Reimagining the Way the World Moves
+            Learn more about UniBuss, the smart way to move around campus.
           </h1>
           <p className="text-lg max-w-2xl">
             Creating new ways for people, goods, and communities to move around
             the world.
           </p>
+          <p className="mb-4 text-lg">
+          We are <strong>UniBuss</strong> — a team of problem-solvers on a mission to revolutionize campus movement.
+          Born out of a real need at Tezpur University in 2024, UNiBuss is a smart platform for real-time university bus tracking and booking.
+        </p>
+
+        <p className="mb-4 text-lg">
+          At UniBuss, we believe movement should be seamless, reliable, and accessible for every student and faculty member.
+          We empower people to know exactly where their campus buses are, when they’ll arrive, and even book their seats ahead of time.
+        </p>
+
+        <p className="mb-4 text-lg">
+          What started as a final-year CSE project is now a full-fledged tech solution designed to solve a daily campus problem.
+          With modern web technologies like React, Next.js, and Supabase, we connect the physical and digital worlds — helping people move smarter, not harder.
+        </p>
+
+        <p className="mb-4 text-lg">
+          Whether you’re rushing to class, heading to the hostel, or catching a ride across campus, UniBuss gives you confidence and control over your commute.
+          And we’re just getting started.
+        </p>
+
+        <p className="text-lg">
+          We're committed to building technology that is inclusive, safe, and sustainable. And even when we don’t get everything perfect,
+          we listen, learn, and iterate — because making campus life smoother for everyone is what UniBuss is all about.
+        </p>
         </div>
       </section>
 
@@ -25,32 +49,9 @@ const AboutPage = () => {
       <section className="max-w-5xl mx-auto px-6 py-12">
         <h2 className="text-4xl font-semibold mb-6 text-center">Our Mission</h2>
         <p className="text-center text-lg text-gray-700">
-          We are RideWise. The go-getters. The kind of people who are relentless
-          about our mission to help people go anywhere and get anything and earn
-          their way. Movement is what we power. It’s our lifeblood. It runs
-          through our veins. It’s what gets us out of bed each morning. It
-          pushes us to constantly reimagine how we can move better. For you. For
-          all the places you want to go. For all the things you want to get. For
-          all the ways you want to earn. Across the entire world. In real time.
-          At the incredible speed of now. We are a tech company that connects
-          the physical and digital worlds to help make movement happen at the
-          tap of a button. Because we believe in a world where movement should
-          be accessible. So you can move and earn safely. In a way that’s
-          sustainable for our planet. And regardless of your gender, race,
-          religion, abilities, or sexual orientation, we champion your right to
-          move and earn freely and without fear. Of course, we haven’t always
-          gotten it right. But we’re not afraid of failure, because it makes us
-          better, wiser, and stronger. And it makes us even more committed to do
-          the right thing by our customers, local communities and cities, and
-          our incredibly diverse set of international partners. The idea for
-          RideWise was born on a snowy night in Tezpur University in 2024, and
-          ever since then our DNA of reimagination and reinvention carries on.
-          We’ve grown into a global platform powering flexible earnings and the
-          movement of people and things in ever expanding ways. We’ve gone from
-          connecting rides on 4 wheels to 2 wheels. From drivers with background
-          checks to real-time verification, safety is a top priority every
-          single day. At RideWise, the pursuit of reimagination is never
-          finished, never stops, and is always just beginning.
+        At UniBuss, our mission is to simplify and transform campus transportation by providing a smart, real-time bus tracking and booking solution tailored for university students and staff. 
+        We aim to eliminate the daily uncertainty of campus commuting by connecting people to their rides with accuracy, 
+        reliability, and ease — ensuring that every journey across campus is efficient, stress-free, and on time.
         </p>
       </section>
 
@@ -109,7 +110,7 @@ const AboutPage = () => {
       <footer className="bg-gray-800 py-10 text-white">
         <div className="max-w-5xl mx-auto px-6 text-center">
           <p>
-            &copy; {new Date().getFullYear()} RideWise. All rights reserved.
+            &copy; {new Date().getFullYear()} UniBuss. All rights reserved.
           </p>
           <nav className="mt-4">
             <a href="" className="mr-4 text-gray-300 hover:text-white">

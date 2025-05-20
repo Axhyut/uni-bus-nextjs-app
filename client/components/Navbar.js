@@ -129,26 +129,16 @@ const Navbar = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="text-2xl font-bold">RideWise</span>
+              <span className="text-2xl font-bold">UniBuss</span>
             </Link>
           </div>
 
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center space-x-4">
             {/* Other navigation links */}
-            <Link href="/">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
-                Ride
-              </button>
-            </Link>
             <Link href="/dashboard">
               <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
                 Drive
-              </button>
-            </Link>
-            <Link href="/help">
-              <button className="block px-4 py-2 text-white hover:bg-gray-900 rounded">
-                Help
               </button>
             </Link>
             <Link href="/about">
@@ -236,19 +226,7 @@ const Navbar = () => {
                         </button>
                       )}
                       {/* wallet */}
-                      <button
-                        onClick={handleWalletClick}
-                        className="w-full px-4 py-2.5 text-sm hover:bg-gray-50 flex items-center justify-between text-gray-700 transition-colors"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <Wallet className="h-4 w-4 text-gray-600" />
-                          <span>Wallet</span>
-                        </div>
-                        <span className="text-sm font-medium">
-                          ₹{(parseFloat(amt) || 0).toFixed(2)}
-                        </span>
-                      </button>
-
+                      
                       {/* Edit Profile Button */}
                       <button
                         onClick={handleProfileEdit}
